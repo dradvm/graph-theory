@@ -1,0 +1,27 @@
+.myBtn {
+    padding: 6px 16px;
+    border-radius: 4px;
+    border: 1px solid white;
+    background-color: transparent;
+    color: white;
+    letter-spacing: 2px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    transition: .2s ease;
+    cursor: pointer;
+
+    &:hover {
+        background-color: white !important;
+        color: black;
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0px);
+    }
+
+    &.selected {
+        background-color: #ccc;
+        color: black;
+    }
+}

@@ -1,0 +1,43 @@
+.myDropDown {
+    .myBtn {
+        border: 1px solid white !important;
+        background-color: transparent !important;
+        color: white !important;
+        font-weight: 700;
+        font-size: 0.8rem;
+        transition: .2s ease;
+
+        &:hover {
+            background-color: white !important;
+            border: 1px solid white !important;
+            color: black !important;
+            transform: translateY(-1px);
+        }
+
+        &:active,
+        &:focus-visible {
+            border: 1px solid white !important;
+            background-color: transparent !important;
+            color: white !important;
+            transform: translateY(0px);
+            box-shadow: none !important;
+        }
+    }
+
+    .menu {
+        border: 1px solid white !important;
+
+        .menuItem {
+            font-weight: 700 !important;
+
+            &:active,
+            &:focus-visible {
+                background-color: #bbb !important;
+            }
+
+            &.selected {
+                background-color: #aaa;
+            }
+        }
+    }
+}
