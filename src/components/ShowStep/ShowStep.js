@@ -513,19 +513,19 @@ function ShowStep() {
 
 
     return (
-        <Container fuild className="mt-4 overflow-auto" style={{ height: "600px" }}>
+        <Container fuild className="overflow-auto" style={{ height: "60%" }}>
             {algorithm === "DFS" ? <Row>
                 <div className="w-100 mb-2">
                     <MyButton value="Run" handleFunction={runDFS} />
                 </div>
                 <Col xs={6}>
-                    <div className="text-white d-flex justify-content-around fw-bold">STACK</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >STACK</div>
                     <Stack>
                         {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={item} />) : ""}
                     </Stack>
                 </Col>
                 <Col xs={6}>
-                    <div className="text-white d-flex justify-content-around fw-bold">LIST MARKED</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >LIST MARKED</div>
 
                     <Stack>
                         {markedShow !== undefined ? markedShow.map((item) => <ShowStepItemStack value={item} />) : ""}
@@ -538,13 +538,13 @@ function ShowStep() {
                     <MyButton value="Run" handleFunction={runBFS} />
                 </div>
                 <Col xs={6}>
-                    <div className="text-white d-flex justify-content-around fw-bold">QUEUE</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >QUEUE</div>
                     <Stack>
                         {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={item} />) : ""}
                     </Stack>
                 </Col>
                 <Col xs={6}>
-                    <div className="text-white d-flex justify-content-around fw-bold">LIST MARKED</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >LIST MARKED</div>
 
                     <Stack>
                         {markedShow !== undefined ? markedShow.map((item) => <ShowStepItemStack value={item} />) : ""}
@@ -557,19 +557,19 @@ function ShowStep() {
                     <MyButton value="Run" handleFunction={runTarjan} />
                 </div>
                 <Col xs={4}>
-                    <div className="text-white d-flex justify-content-around fw-bold">STACK</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >STACK</div>
                     <Stack>
                         {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={item} />) : ""}
                     </Stack>
                 </Col>
                 <Col xs={4}>
-                    <div className="text-white d-flex justify-content-around fw-bold">NUM</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >NUM</div>
                     <Stack>
                         {markedShow !== undefined ? markedShow.map((item, index) => <ShowStepItemStack value={(index + 1) + " | " + item} />) : ""}
                     </Stack>
                 </Col>
                 <Col xs={4}>
-                    <div className="text-white d-flex justify-content-around fw-bold">MIN NUM</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >MIN NUM</div>
                     <Stack>
                         {minNumTarjanShow !== undefined ? minNumTarjanShow.map((item) => <ShowStepItemStack value={Array.isArray(item) ? item.join(" | ") : item} />) : ""}
                     </Stack>
@@ -581,24 +581,24 @@ function ShowStep() {
                 </div>
                 <Col xs={6} className="mb-2">
                     <Stack>
-                        <div className="text-white d-flex justify-content-around fw-bold">START</div>
+                        <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >START</div>
                         <input type={Number.isInteger(start) ? "number" : "text"} className={clsx(styles.cmd)} value={start} onChange={(e) => setStart(Number(e.target.value))} />
                     </Stack>
                 </Col>
                 <Col xs={6} className="mb-2">
                     <Stack>
-                        <div className="text-white d-flex justify-content-around fw-bold">END</div>
+                        <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >END</div>
                         <input type={Number.isInteger(start) ? "number" : "text"} className={clsx(styles.cmd)} value={end} onChange={(e) => setEnd(Number(e.target.value))} />
                     </Stack>
                 </Col>
                 <Col xs={6}>
-                    <div className="text-white d-flex justify-content-around fw-bold">PI NUM</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >PI NUM</div>
                     <Stack>
                         {arrStepShow !== undefined ? arrStepShow.map((item, index) => <ShowStepItemStack value={(index + 1) + " | " + item} />) : ""}
                     </Stack>
                 </Col>
                 <Col xs={6}>
-                    <div className="text-white d-flex justify-content-around fw-bold">PARENT NUM</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >PARENT NUM</div>
                     <Stack>
                         {parentNumShow !== undefined ? parentNumShow.map((item) => <ShowStepItemStack value={Array.isArray(item) ? item.join(" | ") : item} />) : ""}
                     </Stack>
@@ -610,24 +610,24 @@ function ShowStep() {
                 </div>
                 <Col xs={6} className="mb-2">
                     <Stack>
-                        <div className="text-white d-flex justify-content-around fw-bold">START</div>
+                        <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >START</div>
                         <input type={Number.isInteger(start) ? "number" : "text"} className={clsx(styles.cmd)} value={start} onChange={(e) => setStart(Number(e.target.value))} />
                     </Stack>
                 </Col>
                 <Col xs={6} className="mb-2">
                     <Stack>
-                        <div className="text-white d-flex justify-content-around fw-bold">END</div>
+                        <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >END</div>
                         <input type={Number.isInteger(start) ? "number" : "text"} className={clsx(styles.cmd)} value={end} onChange={(e) => setEnd(Number(e.target.value))} />
                     </Stack>
                 </Col>
                 <Col xs={6}>
-                    <div className="text-white d-flex justify-content-around fw-bold">PI NUM</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >PI NUM</div>
                     <Stack>
                         {arrStepShow !== undefined ? arrStepShow.map((item, index) => <ShowStepItemStack value={(index + 1) + " | " + item} />) : ""}
                     </Stack>
                 </Col>
                 <Col xs={6}>
-                    <div className="text-white d-flex justify-content-around fw-bold">PARENT NUM</div>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >PARENT NUM</div>
                     <Stack>
                         {parentNumShow !== undefined ? parentNumShow.map((item) => <ShowStepItemStack value={Array.isArray(item) ? item.join(" | ") : item} />) : ""}
                     </Stack>

@@ -121,13 +121,13 @@ function CommandArea() {
         }
     }, [algorithm])
     return (
-        <Container fuild className="mt-auto" gap={0}>
-            <Row>
-                <Col xs={5} className="d-flex">
+        <Container fuild gap={0} style={{ height: "25%" }}>
+            <Row className="h-100">
+                <Col xs={7} className="d-flex">
                     <textarea className={clsx("w-100 py-2 px-3 lh-sm bg-black text-white", styles.cmd)} value={valueInput} onChange={(e) => setValueInput(e.target.value)} />
                 </Col>
-                <Col xs={7} className="d-flex">
-                    <Stack gap={3}>
+                <Col xs={5} className="d-flex">
+                    <Stack gap={2}>
                         <div>
                             <MyButton value="Run" handleFunction={runInput} />
                         </div>

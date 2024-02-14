@@ -14,8 +14,8 @@ function MyEdge({ edge, radius, border }) {
         pos2: {},
         pos3: {}
     })
-    const radiusEdge = 20
-    const borderEdge = 4
+    const radiusEdge = 16
+    const borderEdge = 2
 
     const isReverseEdge = (edge) => {
         var check = false
@@ -80,7 +80,7 @@ function MyEdge({ edge, radius, border }) {
                     modeDirected ? current.pos3.y : current.pvy
                 ]}
                 stroke={isPath() ? state.pending : "white"}
-                strokeWidth={3}
+                strokeWidth={2}
                 fill="black"
                 tension={current.pos2.tension}
             /> : <Arrow
@@ -93,7 +93,7 @@ function MyEdge({ edge, radius, border }) {
                     current.pvy
                 ]}
                 stroke={isPath() ? state.pending : "white"}
-                strokeWidth={3}
+                    strokeWidth={2}
                 fill="black"
                 tension={current.pos2.tension}
             />}
@@ -112,7 +112,7 @@ function MyEdge({ edge, radius, border }) {
                         y={-5}
                         rotation={60}
                         stroke={isPath() ? state.pending : "white"}
-                        strokeWidth={3}
+                        strokeWidth={2}
                         fill="black"
                         tension={current.pos2.tension}
                     />
@@ -128,7 +128,7 @@ function MyEdge({ edge, radius, border }) {
                         />
                         <Text
                             text={isNaN(edge.w) ? "" : edge.w}
-                            fontSize={14}
+                            fontSize={11}
                             fill="black"
                             align="center"
                             verticalAlign="middle"
@@ -153,7 +153,7 @@ function MyEdge({ edge, radius, border }) {
                 />
                 <Text
                     text={isNaN(edge.w) ? "" : edge.w}
-                    fontSize={14}
+                    fontSize={11}
                     fill="black"
                     align="center"
                     verticalAlign="middle"

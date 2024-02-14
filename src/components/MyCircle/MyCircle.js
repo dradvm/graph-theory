@@ -61,7 +61,7 @@ function MyCircle({ point, handleRender, radius, size, border, color, area, stat
                 text={current.text}
                 align="center"
                 verticalAlign="middle"
-                fontSize={point.secondText !== undefined ? 18 : size}
+                fontSize={point.secondText !== undefined ? 14 : size}
                 fill="black"
                 width={radius + border}
                 height={radius + border}

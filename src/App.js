@@ -90,11 +90,11 @@ function App() {
             <GraphContainer dimensions={dimensionsGraphContainer} />
           </Col>
           <Col xs={3}>
-            <Stack className="h-100">
+            <div className="d-flex flex-column justify-content-between h-100">
               <NavTop />
               <ShowStep />
               <CommandArea />
-            </Stack>
+            </div>
           </Col>
         </Row>
       </Container>

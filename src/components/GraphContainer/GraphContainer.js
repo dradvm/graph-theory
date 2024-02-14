@@ -9,8 +9,8 @@ function GraphContainer({ dimensions }) {
     const { dataGraph, points, setPoints, edges, setEdges, handlePointsSetPosition, state } = useContext(GraphContext)
 
     const size = 200
-    const radius = 40
-    const border = 6
+    const radius = 32
+    const border = 4
     useEffect(() => {
         if (dataGraph.n > 0) {
             const d = dimensions
@@ -43,7 +43,7 @@ function GraphContainer({ dimensions }) {
                         point={item}
                         handleRender={handlePointsSetPosition}
                         color={"#fff"}
-                        size={20}
+                        size={14}
                         radius={radius}
                         border={border}
                         area={dimensions}
