@@ -79,7 +79,7 @@ function MyEdge({ edge, radius, border }) {
                     modeDirected ? current.pos3.x : current.pvx,
                     modeDirected ? current.pos3.y : current.pvy
                 ]}
-                stroke={isPath() ? state.pending : "white"}
+                stroke={edge.state}
                 strokeWidth={2}
                 fill="black"
                 tension={current.pos2.tension}
@@ -92,7 +92,7 @@ function MyEdge({ edge, radius, border }) {
                     current.pvx,
                     current.pvy
                 ]}
-                stroke={isPath() ? state.pending : "white"}
+                    stroke={edge.state}
                     strokeWidth={2}
                 fill="black"
                 tension={current.pos2.tension}
@@ -111,7 +111,7 @@ function MyEdge({ edge, radius, border }) {
                         x={radius}
                         y={-5}
                         rotation={60}
-                        stroke={isPath() ? state.pending : "white"}
+                        stroke={edge.state}
                         strokeWidth={2}
                         fill="black"
                         tension={current.pos2.tension}

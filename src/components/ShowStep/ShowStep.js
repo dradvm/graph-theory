@@ -32,6 +32,10 @@ function ShowStep() {
     const [start, setStart] = useState(1)
     const [end, setEnd] = useState(0)
 
+    const [arrEdgeList, setArrEdgeList] = useState([])
+    const [minEdgeList, setMinEdgeList] = useState([])
+    const [minEdgeShow, setMinEdgeShow] = useState()
+
     const DFS = (num) => {
         const stack = []
         let u
@@ -54,7 +58,7 @@ function ShowStep() {
         }
     }
     const runDFS = () => {
-        resetAll()
+        resetAllData()
         marked.forEach((item, index) => marked[index] = 0)
         for (let i = 1; i <= dataGraph.n; i++) {
             if (marked[i - 1] === 0) {
@@ -112,7 +116,7 @@ function ShowStep() {
         }
     }
     const runBFS = () => {
-        resetAll()
+        resetAllData()
         marked.forEach((item, index) => marked[index] = 0)
         for (let i = 1; i <= dataGraph.n; i++) {
             if (marked[i - 1] === 0) {
@@ -217,7 +221,7 @@ function ShowStep() {
         }
     }
     const runTarjan = () => {
-        resetAll()
+        resetAllData()
         for (let i = 1; i <= dataGraph.n; i++) {
             if (numTarjan[i - 1] === 0) {
                 Tarjan(i)
@@ -299,7 +303,7 @@ function ShowStep() {
             piNumList.push(piNum.map((item) => item === infinity ? "\u221E" : item))
             parentNumList.push(Array.from(parentNum))
             for (let j = 1; j <= dataGraph.n; j++) {
-                if (dataGraph.matrix[u_min][j] !== -1 && marked[j - 1] === 0) {
+                if (dataGraph.matrix[u_min][j] !== -1000 && marked[j - 1] === 0) {
                     if (piNum[u_min - 1] + dataGraph.matrix[u_min][j] < piNum[j - 1]) {
                         var oldPiNum = piNum[j - 1]
                         piNum[j - 1] = piNum[u_min - 1] + dataGraph.matrix[u_min][j]
@@ -321,7 +325,7 @@ function ShowStep() {
         parentNumList.push(Array.from(parentNum))
     }
     const runMooreDijkstra = () => {
-        resetAll()
+        resetAllData()
         if (start < 0 || start > dataGraph.n) {
             setStart("Invalid start number!!")
             setTimeout(() => {
@@ -388,7 +392,7 @@ function ShowStep() {
         parentNumList.push(Array.from(parentNum))
     }
     const runBellmanFord = () => {
-        resetAll()
+        resetAllData()
         if (start < 0 || start > dataGraph.n) {
             setStart("Invalid start number!!")
             setTimeout(() => {
@@ -406,9 +410,60 @@ function ShowStep() {
         bellmanFord(start)
         showBellmanFord()
     }
-
     const showBellmanFord = () => {
         showMooreDijkstra()
+    }
+    const floydWarshall = () => {
+        const matrixFloyd = Array.from(dataGraph.matrix.slice(0, dataGraph.n + 1))
+        matrixFloyd.forEach((item, index) => {
+            matrixFloyd[index] = item.slice(0, dataGraph.n + 1).map((item2) => item2 === -1000 ? infinity : item2)
+        })
+        const arr = []
+        for (let i = 1; i <= dataGraph.n; i++) {
+            matrixFloyd[i][i] = 0
+            for (let j = 1; j <= dataGraph.n; j++) {
+                arr.push([i, j])
+            }
+        }
+        matrixFloyd.splice(0, 1)
+        matrixFloyd.forEach((item, index) => {
+            matrixFloyd[index] = item.slice(1, item.length)
+        })
+        arrStepList.push([].concat(...matrixFloyd).map((item) => item === infinity ? "NO PATH" : item))
+        for (let k = 1; k <= dataGraph.n; k++) {
+            for (let i = 1; i <= dataGraph.n; i++) {
+                for (let j = 1; j <= dataGraph.n; j++) {
+                    if (matrixFloyd[i - 1][k - 1] === infinity || matrixFloyd[k - 1][j - 1] === infinity) {
+                        continue
+                    }
+                    if (matrixFloyd[i - 1][j - 1] > matrixFloyd[i - 1][k - 1] + matrixFloyd[k - 1][j - 1]) {
+                        const temp = Array.from(matrixFloyd.map((item) => Array.from(item)))
+                        temp[i - 1][j - 1] = matrixFloyd[i - 1][k - 1] + " + " + matrixFloyd[k - 1][j - 1] + " < " + (matrixFloyd[i - 1][j - 1] === infinity ? "\u221E" : matrixFloyd[i - 1][j - 1])
+                        console.log(temp)
+                        arrStepList.push([].concat(...temp).map((item) => item === infinity ? "NO PATH" : item))
+                        matrixFloyd[i - 1][j - 1] = matrixFloyd[i - 1][k - 1] + matrixFloyd[k - 1][j - 1]
+                    }
+                }
+            }
+        }
+
+        arrStepList.push([].concat(...matrixFloyd).map((item) => item === infinity ? "NO PATH" : item))
+        markedList.push(arr)
+    }
+    const runFloydWarshall = () => {
+        resetAllData()
+        floydWarshall()
+        showFloydWarshall()
+    }
+    const showFloydWarshall = () => {
+        setMarkedShow(markedList[0])
+        var timeoutId
+        for (let i = 0; i < arrStepList.length; i++) {
+            timeoutId = setTimeout(() => {
+                setArrStepShow(arrStepList[i])
+            }, time * i)
+        }
+        timeoutList.push(timeoutId)
     }
 
     const showPath = () => {
@@ -436,7 +491,7 @@ function ShowStep() {
                     return {
                         ...item,
                         state: newState,
-                        secondText: piNum[item.value - 1]
+                        secondText: piNum[item.value - 1] === infinity ? "\u221E" : piNum[item.value - 1]
                     }
                 }))
                 if (arrNum.length > 1) {
@@ -445,23 +500,166 @@ function ShowStep() {
                         arrTemp.push([arrNum[j - 1], arrNum[j]])
                     }
                     setEdges(edges.map((edge) => {
-                        var isPath = false;
+                        var newState = state.idle
                         arrTemp.forEach((temp) => {
                             if (edge.u === temp[0] && edge.v === temp[1]) {
-                                isPath = true
+                                newState = state.pending
                             }
                         })
                         return {
                             ...edge,
-                            isPath: isPath
+                            state: newState
                         }
                     }))
                 }
             }, time * i)
             timeoutList.push(timeoutId)
         }
-
     }
+    const topoDFS = (num) => {
+        marked[num - 1].state = 1
+        for (let i = 1; i <= dataGraph.n; i++) {
+            if (dataGraph.matrix[num][i] === 1) {
+                if (marked[i - 1].state === 0) {
+                    topoDFS(i)
+                }
+
+            }
+        }
+        marked[num - 1].state = 2
+        stack.push(num)
+    }
+    const topo = () => {
+        marked.splice(0)
+        for (let i = 1; i <= dataGraph.n; i++) {
+            marked.push({ value: i, state: 0 })
+        }
+        for (let i = 1; i <= dataGraph.n; i++) {
+            if (marked[i - 1].state === 0) {
+                topoDFS(i)
+                console.log(i)
+            }
+        }
+    }
+    const runTopo = () => {
+        resetAllData()
+        topo()
+    }
+    const prim = (num) => {
+        var arrPoint = [num]
+        var arrEdge = []
+        var treeEdge = []
+        var minEdge
+        edges.forEach((edge) => {
+            if (edge.u === num) {
+                arrEdge.push(edge)
+            }
+        })
+        markedList.push(Array.from(arrPoint))
+        arrStepList.push(Array.from(arrEdge))
+        arrEdgeList.push(Array.from(treeEdge))
+        minEdgeList.push(undefined)
+        while (arrEdge.length > 0) {
+            minEdge = undefined
+            minEdge = arrEdge.reduce((minEdge, edge) => {
+                if (edge.w < minEdge.w) {
+                    return edge
+                }
+                else if (edge.w === minEdge.w && edge.v < minEdge.v) {
+                    return edge
+                }
+                return minEdge
+            }, arrEdge[0])
+
+            markedList.push(Array.from(arrPoint))
+            arrStepList.push(Array.from(arrEdge))
+            arrEdgeList.push(Array.from(treeEdge))
+            minEdgeList.push(minEdge)
+            arrEdge = [...arrEdge.slice(0, arrEdge.indexOf(minEdge)), ...arrEdge.slice(arrEdge.indexOf(minEdge) + 1, arrEdge.length)]
+            if (arrPoint.indexOf(minEdge.u) === -1 || arrPoint.indexOf(minEdge.v) === -1) {
+                var point = minEdge.v
+                if (arrPoint.indexOf(point) > -1) {
+                    point = minEdge.u
+                }
+
+                arrPoint.push(point)
+                treeEdge.push(minEdge)
+
+                markedList.push(Array.from(arrPoint))
+                arrStepList.push(Array.from(arrEdge))
+                arrEdgeList.push(Array.from(treeEdge))
+                minEdgeList.push(undefined)
+                edges.forEach((edge) => {
+                    if (!(arrPoint.indexOf(edge.u) !== -1 && arrPoint.indexOf(edge.v) !== -1)) {
+                        if (edge.u === arrPoint[arrPoint.length - 1] || edge.v === arrPoint[arrPoint.length - 1]) {
+                            arrEdge.push(edge)
+                        }
+                    }
+                })
+
+                markedList.push(Array.from(arrPoint))
+                arrStepList.push(Array.from(arrEdge))
+                arrEdgeList.push(Array.from(treeEdge))
+                minEdgeList.push(undefined)
+            }
+        }
+        markedList.push(Array.from(arrPoint))
+        arrStepList.push(Array.from(arrEdge))
+        arrEdgeList.push(Array.from(treeEdge))
+        minEdgeList.push(undefined)
+    }
+    const runPrim = () => {
+        resetAllData()
+        if (start < 0 || start > dataGraph.n) {
+            setStart("Invalid start number!!")
+            setTimeout(() => {
+                setStart(1)
+            }, 3000)
+            return
+        }
+        prim(start)
+        showPrim()
+        console.log(arrStepList)
+    }
+    const showPrim = () => {
+        var timeoutId
+        for (let i = 0; i < markedList.length; i++) {
+            timeoutId = setTimeout(() => {
+                var pointPending = Array.from(new Set(arrStepList[i].reduce((arr, item) => arr.concat([item.u, item.v]), [])))
+                setPoints(points.map((item) => {
+                    var newState = state.idle
+                    if (pointPending.indexOf(item.value) > -1) {
+                        newState = state.pending
+                    }
+                    if (markedList[i].indexOf(item.value) > -1) {
+                        newState = state.marked
+                    }
+                    return {
+                        ...item,
+                        state: newState
+                    }
+                }))
+                setEdges(edges.map((item) => {
+                    var newState = state.idle
+                    if (arrStepList[i].indexOf(item) > -1) {
+                        newState = state.pending
+                    }
+                    if (arrEdgeList[i].indexOf(item) > -1) {
+                        newState = state.marked
+                    }
+                    return {
+                        ...item,
+                        state: newState
+                    }
+                }))
+                setMarkedShow(markedList[i])
+                setArrStepShow(arrStepList[i])
+                setMinEdgeShow(minEdgeList[i])
+            }, i * time)
+            timeoutList.push(timeoutId)
+        }
+    }
+
 
     const resetAll = () => {
         setMarked(Array(dataGraph.n).fill(0))
@@ -469,6 +667,7 @@ function ShowStep() {
         setMinNumTarjan(Array(dataGraph.n).fill(0))
         setPiNum(Array(dataGraph.n).fill(infinity))
         setParentNum(Array(dataGraph.n).fill(-1))
+        setMinEdgeShow(undefined)
 
         arrStepList.splice(0)
         markedList.splice(0)
@@ -481,20 +680,15 @@ function ShowStep() {
         minNumTarjanShow.splice(0)
         parentNumShow.splice(0)
         connectedComponentList.splice(0)
+        arrEdgeList.splice(0)
+        minEdgeList.splice(0)
         timeoutList.forEach((timeoutId) => {
             clearTimeout(timeoutId)
         })
         timeoutList.splice(0)
 
     }
-
-    useEffect(() => {
-        resetAll()
-        setStart(1)
-        setEnd(0)
-    }, [dataGraph])
-
-    useEffect(() => {
+    const resetAllData = () => {
         resetAll()
         setPoints(points.map((item) => {
             return {
@@ -506,14 +700,24 @@ function ShowStep() {
         setEdges(edges.map((item) => {
             return {
                 ...item,
-                isPath: false
+                isPath: false,
+                state: state.idle
             }
         }))
+    }
+    useEffect(() => {
+        resetAll()
+        setStart(1)
+        setEnd(0)
+    }, [dataGraph])
+
+    useEffect(() => {
+        resetAllData()
     }, [algorithm, time, modePath, modeDirected])
 
 
     return (
-        <Container fuild className="overflow-auto" style={{ height: "60%" }}>
+        <Container fuild className="overflow-auto" style={{ height: "400px" }}>
             {algorithm === "DFS" ? <Row>
                 <div className="w-100 mb-2">
                     <MyButton value="Run" handleFunction={runDFS} />
@@ -630,6 +834,58 @@ function ShowStep() {
                     <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >PARENT NUM</div>
                     <Stack>
                         {parentNumShow !== undefined ? parentNumShow.map((item) => <ShowStepItemStack value={Array.isArray(item) ? item.join(" | ") : item} />) : ""}
+                    </Stack>
+                </Col>
+            </Row> : ""}
+            {algorithm === "Floyd - Warshall" ? <Row>
+                <div className="w-100 mb-2">
+                    <MyButton value="Run" handleFunction={runFloydWarshall} />
+                </div>
+                <Col xs={6}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >EDGES</div>
+                    <Stack>
+                        {markedShow !== undefined ? markedShow.map((item) => <ShowStepItemStack value={item[0] + " ---> " + item[1]} />) : ""}
+                    </Stack>
+                </Col>
+                <Col xs={6}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >VALUE</div>
+                    <Stack>
+                        {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={item} />) : ""}
+                    </Stack>
+                </Col>
+            </Row> : ""}
+            {algorithm === "Topo" ? <Row>
+                <div className="w-100 mb-2">
+                    <MyButton value="Run" handleFunction={runTopo} />
+                </div>
+            </Row> : ""}
+            {algorithm === "Prim" ? <Row>
+                <div className="w-100 mb-2">
+                    <MyButton value="Run" handleFunction={runPrim} />
+                </div>
+                <Col xs={12} className="mb-2">
+                    <Stack>
+                        <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >START</div>
+                        <input type={Number.isInteger(start) ? "number" : "text"} className={clsx(styles.cmd)} value={start} onChange={(e) => setStart(Number(e.target.value))} />
+                    </Stack>
+                </Col>
+
+                <Col xs={4}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >POINTS</div>
+                    <Stack>
+                        {markedShow !== undefined ? markedShow.map((item) => <ShowStepItemStack value={item} />) : ""}
+                    </Stack>
+                </Col>
+                <Col xs={4}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >EDGES</div>
+                    <Stack>
+                        {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={"(" + item.u + ", " + item.v + ")"} />) : ""}
+                    </Stack>
+                </Col>
+                <Col xs={4}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >MIN EDGE</div>
+                    <Stack>
+                        <ShowStepItemStack value={minEdgeShow === undefined ? "" : ("(" + minEdgeShow.u + ", " + minEdgeShow.v + ")")} />
                     </Stack>
                 </Col>
             </Row> : ""}

@@ -6,7 +6,7 @@ import { useContext, useEffect, useState } from "react";
 import { GraphContext } from "@/App";
 
 function CommandArea() {
-    const { setDataGraph, modeDirected, setModeDirected, modePath, setModePath, algorithm, setAlgorithm, setPoints } = useContext(GraphContext)
+    const { setDataGraph, modeDirected, setModeDirected, modePath, setModePath, algorithm, setAlgorithm, setPoints, state } = useContext(GraphContext)
     const [timeoutId, setTimeoutId] = useState([])
     const [valueInput, setValueInput] = useState("")
     const regNumberPos = /^[0-9]+$/
@@ -34,7 +34,7 @@ function CommandArea() {
         const dataGraph = data.shift().split(" ")
         const n = Number(dataGraph[0])
         const m = Number(dataGraph[1])
-        const matrix = ["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall"].indexOf(algorithm) > -1 ? Array.from({ length: 100 }).map((item) => Array(100).fill(-1)) : Array.from({ length: 100 }).map((item) => Array(100).fill(0))
+        const matrix = ["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall"].indexOf(algorithm) > -1 ? Array.from({ length: 100 }).map((item) => Array(100).fill(-1000)) : Array.from({ length: 100 }).map((item) => Array(100).fill(0))
         const dataEdge = data.map((item) => item.split(" ")).map((edge) => {
             {
                 const u = Number(edge[0])
@@ -51,7 +51,7 @@ function CommandArea() {
                         matrix[v][u] = 1
                     }
                 }
-                return { u: u, v: v, w: modePath ? Number(edge[2]) : NaN, isPath: false }
+                return { u: u, v: v, w: modePath ? Number(edge[2]) : NaN, isPath: false, state: state.idle }
 
             }
         })
@@ -68,6 +68,10 @@ function CommandArea() {
                 if (isNaN(edge.w) && modePath) {
                     error = true
                     runError("You must enter path!!")
+                }
+                if (algorithm === "Moore - Dijkstra" && edge.w < 0) {
+                    error = true
+                    runError("Path must be equal or greater than 0")
                 }
             })
         }
