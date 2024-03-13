@@ -51,7 +51,7 @@ function CommandArea() {
                         matrix[v][u] = 1
                     }
                 }
-                return { u: u, v: v, w: modePath ? Number(edge[2]) : NaN, isPath: false, state: state.idle }
+                return { u: u, v: v, w: modePath ? Number(edge[2]) : NaN, state: state.idle }
 
             }
         })

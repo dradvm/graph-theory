@@ -26,6 +26,7 @@ function ShowStep() {
     const infinity = 9999
     const [piNum, setPiNum] = useState([])
     const [piNumList] = useState([])
+    const [piNumShow, setPiNumShow] = useState([])
     const [parentNum, setParentNum] = useState([])
     const [parentNumList] = useState([])
     const [parentNumShow, setParentNumShow] = useState([])
@@ -35,7 +36,7 @@ function ShowStep() {
     const [arrEdgeList, setArrEdgeList] = useState([])
     const [minEdgeList, setMinEdgeList] = useState([])
     const [minEdgeShow, setMinEdgeShow] = useState()
-
+    const [minValue, setMinValue] = useState(0)
     const DFS = (num) => {
         const stack = []
         let u
@@ -298,7 +299,6 @@ function ShowStep() {
                 }
             }
             marked[u_min - 1] = 1
-
             arrStepList.push(piNum.map((item) => item === infinity ? "\u221E" : item))
             piNumList.push(piNum.map((item) => item === infinity ? "\u221E" : item))
             parentNumList.push(Array.from(parentNum))
@@ -319,7 +319,7 @@ function ShowStep() {
             }
 
         }
-
+        console.log(parentNum)
         piNumList.push(piNum.map((item) => item === infinity ? "\u221E" : item))
         arrStepList.push(piNum.map((item) => item === infinity ? "\u221E" : item))
         parentNumList.push(Array.from(parentNum))
@@ -523,7 +523,6 @@ function ShowStep() {
                 if (marked[i - 1].state === 0) {
                     topoDFS(i)
                 }
-
             }
         }
         marked[num - 1].state = 2
@@ -545,23 +544,148 @@ function ShowStep() {
         resetAllData()
         topo()
     }
-    const prim = (num) => {
-        var arrPoint = [num]
-        var arrEdge = []
-        var treeEdge = []
-        var minEdge
-        edges.forEach((edge) => {
-            if (edge.u === num) {
-                arrEdge.push(edge)
+
+    const kruskal = () => {
+        var arrEdge = Array.from(edges).sort((a, b) => {
+            if (a.w < b.w) {
+                return -1
+            }
+            else {
+                if (a.w === b.w) {
+                    if (a < b) {
+                        return -1
+                    }
+                    else {
+                        return 1
+                    }
+                }
+                return 1
             }
         })
-        markedList.push(Array.from(arrPoint))
-        arrStepList.push(Array.from(arrEdge))
-        arrEdgeList.push(Array.from(treeEdge))
-        minEdgeList.push(undefined)
-        while (arrEdge.length > 0) {
+        var arrEdge2 = Array.from(arrEdge)
+        var tree = []
+        var minEdge
+        while (tree.length != dataGraph.n - 1 && arrEdge.length > 0) {
+            minEdge = arrEdge.shift()
+            marked[minEdge.u - 1] = marked[minEdge.u - 1] === 0 ? minEdge.u : marked[minEdge.u - 1]
+            marked[minEdge.v - 1] = marked[minEdge.v - 1] === 0 ? minEdge.v : marked[minEdge.v - 1]
+            if (marked[minEdge.u - 1] != marked[minEdge.v - 1]) {
+                var rootU = marked[minEdge.u - 1]
+                var rootV = marked[minEdge.v - 1]
+                tree.push(minEdge)
+                marked.forEach((item, index) => {
+                    if (item === rootU) {
+                        marked[index] = rootV
+                    }
+                })
+            }
+            arrStepList.push(Array.from(arrEdge2))
+            minEdgeList.push(minEdge)
+            arrEdgeList.push(Array.from(tree))
+            markedList.push(Array.from(marked))
+        }
+        arrStepList.push(Array.from(arrEdge2))
+        minEdgeList.push({})
+        arrEdgeList.push(Array.from(tree))
+        markedList.push(Array.from(marked))
+    }
+    const runKruskal = () => {
+        resetAllData()
+        kruskal()
+        showKruskal()
+    }
+    const showKruskal = () => {
+        var timeoutId
+        for (let i = 0; i < arrStepList.length; i++) {
+            timeoutId = setTimeout(() => {
+                var pointTree = Array.from(new Set(arrEdgeList[i].reduce((arr, item) => arr.concat([item.u], [item.v]), [])))
+
+                setPoints(points.map((item) => {
+                    var newState = state.idle
+                    if (pointTree.indexOf(item.value) > -1) {
+                        newState = state.marked
+                    }
+                    if (minEdgeList[i].u === item.value || minEdgeList[i].v === item.value) {
+                        newState = state.pending
+                    }
+                    return {
+                        ...item,
+                        state: newState
+                    }
+                }))
+                setEdges(edges.map((item) => {
+                    var newState = state.idle
+                    if (arrEdgeList[i].indexOf(item) > -1) {
+                        newState = state.marked
+                    }
+                    if (item === minEdgeList[i]) {
+                        newState = state.pending
+                    }
+                    return {
+                        ...item,
+                        state: newState
+                    }
+                }))
+                setMarkedShow(markedList[i])
+                var arrEdgeState = []
+                arrStepList[i].forEach((item) => {
+                    if (arrEdgeList[i].indexOf(item) > -1) {
+                        arrEdgeState.push([item, true])
+                    }
+                    else {
+                        arrEdgeState.push([item, false])
+                    }
+                })
+                console.log(markedList[i])
+                console.log(arrEdgeState)
+                setArrStepShow(arrEdgeState)
+            }, time * i)
+            timeoutList.push(timeoutId)
+        }
+    }
+
+    const prim = (num) => {
+        piNum[num - 1] = 0
+        marked[num - 1] = 1
+        var u_min = num
+        var tree = []
+        var minEdge = undefined
+        var sum = 0;
+        for (let i = 1; i <= dataGraph.n; i++) {
+            var max = infinity
             minEdge = undefined
-            minEdge = arrEdge.reduce((minEdge, edge) => {
+            for (let j = 1; j <= dataGraph.n; j++) {
+                if (piNum[j - 1] < max && marked[j - 1] === 0) {
+                    max = piNum[j - 1]
+                    u_min = j
+                }
+            }
+            marked[u_min - 1] = 1
+            for (let j = 1; j <= dataGraph.n; j++) {
+                if (dataGraph.matrix[u_min][j] !== 0 && marked[j - 1] === 0) {
+                    if (dataGraph.matrix[u_min][j] < piNum[j - 1]) {
+                        piNum[j - 1] = dataGraph.matrix[u_min][j]
+                    }
+                }
+            }
+            markedList.push(Array.from(marked))
+            piNumList.push(piNum.map((item) => item == infinity ? "\u221E" : item))
+            var listEdge = []
+            for (let u = 1; u <= dataGraph.n; u++) {
+                for (let v = 1; v <= dataGraph.n; v++) {
+                    if (dataGraph.matrix[u][v] !== 0 && marked[u - 1] === 1 && marked[v - 1] === 0) {
+                        listEdge.push(edges.find((edge) => (edge.u === u && edge.v === v) || (edge.u === v && edge.v === u)))
+                    }
+                }
+            }
+            arrStepList.push(listEdge)
+            arrEdgeList.push(Array.from(tree))
+            minEdgeList.push(minEdge)
+
+            markedList.push(Array.from(marked))
+            piNumList.push(piNum.map((item) => item == infinity ? "\u221E" : item))
+            arrStepList.push(listEdge)
+            minEdge = listEdge.reduce((minEdge, edge) => {
                 if (edge.w < minEdge.w) {
                     return edge
                 }
@@ -569,44 +693,13 @@ function ShowStep() {
                     return edge
                 }
                 return minEdge
-            }, arrEdge[0])
-
-            markedList.push(Array.from(arrPoint))
-            arrStepList.push(Array.from(arrEdge))
-            arrEdgeList.push(Array.from(treeEdge))
+            }, listEdge[0])
+            tree.push(minEdge)
+            arrEdgeList.push(Array.from(tree))
             minEdgeList.push(minEdge)
-            arrEdge = [...arrEdge.slice(0, arrEdge.indexOf(minEdge)), ...arrEdge.slice(arrEdge.indexOf(minEdge) + 1, arrEdge.length)]
-            if (arrPoint.indexOf(minEdge.u) === -1 || arrPoint.indexOf(minEdge.v) === -1) {
-                var point = minEdge.v
-                if (arrPoint.indexOf(point) > -1) {
-                    point = minEdge.u
-                }
-
-                arrPoint.push(point)
-                treeEdge.push(minEdge)
-
-                markedList.push(Array.from(arrPoint))
-                arrStepList.push(Array.from(arrEdge))
-                arrEdgeList.push(Array.from(treeEdge))
-                minEdgeList.push(undefined)
-                edges.forEach((edge) => {
-                    if (!(arrPoint.indexOf(edge.u) !== -1 && arrPoint.indexOf(edge.v) !== -1)) {
-                        if (edge.u === arrPoint[arrPoint.length - 1] || edge.v === arrPoint[arrPoint.length - 1]) {
-                            arrEdge.push(edge)
-                        }
-                    }
-                })
-
-                markedList.push(Array.from(arrPoint))
-                arrStepList.push(Array.from(arrEdge))
-                arrEdgeList.push(Array.from(treeEdge))
-                minEdgeList.push(undefined)
-            }
+            sum += minEdge === undefined ? 0 : minEdge.w
         }
-        markedList.push(Array.from(arrPoint))
-        arrStepList.push(Array.from(arrEdge))
-        arrEdgeList.push(Array.from(treeEdge))
-        minEdgeList.push(undefined)
+        setMinValue(sum)
     }
     const runPrim = () => {
         resetAllData()
@@ -619,19 +712,19 @@ function ShowStep() {
         }
         prim(start)
         showPrim()
-        console.log(arrStepList)
     }
     const showPrim = () => {
         var timeoutId
         for (let i = 0; i < markedList.length; i++) {
             timeoutId = setTimeout(() => {
                 var pointPending = Array.from(new Set(arrStepList[i].reduce((arr, item) => arr.concat([item.u, item.v]), [])))
+
                 setPoints(points.map((item) => {
                     var newState = state.idle
                     if (pointPending.indexOf(item.value) > -1) {
                         newState = state.pending
                     }
-                    if (markedList[i].indexOf(item.value) > -1) {
+                    if (markedList[i][item.value - 1] === 1) {
                         newState = state.marked
                     }
                     return {
@@ -652,14 +745,13 @@ function ShowStep() {
                         state: newState
                     }
                 }))
-                setMarkedShow(markedList[i])
+                setPiNumShow(piNumList[i])
                 setArrStepShow(arrStepList[i])
                 setMinEdgeShow(minEdgeList[i])
-            }, i * time)
+            }, time * i)
             timeoutList.push(timeoutId)
         }
     }
-
 
     const resetAll = () => {
         setMarked(Array(dataGraph.n).fill(0))
@@ -668,7 +760,7 @@ function ShowStep() {
         setPiNum(Array(dataGraph.n).fill(infinity))
         setParentNum(Array(dataGraph.n).fill(-1))
         setMinEdgeShow(undefined)
-
+        setMinValue(0)
         arrStepList.splice(0)
         markedList.splice(0)
         minNumTarjanList.splice(0)
@@ -678,6 +770,7 @@ function ShowStep() {
         arrStepShow.splice(0)
         markedShow.splice(0)
         minNumTarjanShow.splice(0)
+        piNumShow.splice(0)
         parentNumShow.splice(0)
         connectedComponentList.splice(0)
         arrEdgeList.splice(0)
@@ -700,7 +793,6 @@ function ShowStep() {
         setEdges(edges.map((item) => {
             return {
                 ...item,
-                isPath: false,
                 state: state.idle
             }
         }))
@@ -859,6 +951,23 @@ function ShowStep() {
                     <MyButton value="Run" handleFunction={runTopo} />
                 </div>
             </Row> : ""}
+            {algorithm === "Kruskal" ? <Row>
+                <div className="w-100 mb-2">
+                    <MyButton value="Run" handleFunction={runKruskal} />
+                </div>
+                <Col xs={6}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >MARK</div>
+                    <Stack>
+                        {markedShow !== undefined ? markedShow.map((item) => <ShowStepItemStack value={item} />) : ""}
+                    </Stack>
+                </Col>
+                <Col xs={6}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >EDGES</div>
+                    <Stack>
+                        {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={"(" + item[0].u + ", " + item[0].v + ")"} state={item[1]} />) : ""}
+                    </Stack>
+                </Col>
+            </Row> : ""}
             {algorithm === "Prim" ? <Row>
                 <div className="w-100 mb-2">
                     <MyButton value="Run" handleFunction={runPrim} />
@@ -873,7 +982,7 @@ function ShowStep() {
                 <Col xs={4}>
                     <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >POINTS</div>
                     <Stack>
-                        {markedShow !== undefined ? markedShow.map((item) => <ShowStepItemStack value={item} />) : ""}
+                        {piNumShow !== undefined ? piNumShow.map((item) => <ShowStepItemStack value={item} />) : ""}
                     </Stack>
                 </Col>
                 <Col xs={4}>
@@ -888,7 +997,11 @@ function ShowStep() {
                         <ShowStepItemStack value={minEdgeShow === undefined ? "" : ("(" + minEdgeShow.u + ", " + minEdgeShow.v + ")")} />
                     </Stack>
                 </Col>
+                <Col xs={12}>
+                    <ShowStepItemStack value={minValue} />
+                </Col>
             </Row> : ""}
+
         </Container>
     );
 }
