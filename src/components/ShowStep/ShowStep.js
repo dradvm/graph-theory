@@ -6,11 +6,14 @@ import MyButton from "../MyButton/MyButton";
 import clsx from "clsx";
 import styles from "./ShowStep.module.scss"
 function ShowStep() {
-    const { dataGraph, points, setPoints, state, algorithm, time, modeDirected, setModeDirected, modePath, setModePath, edges, setEdges } = useContext(GraphContext)
+    const { dataGraph, points, setPoints, state, algorithm, time, modeDirected, setModeDirected, modePath, setModePath, edges, setEdges, dimensionsGraphContainer } = useContext(GraphContext)
     const [arrStepList] = useState([])
+    const [arrStepList2] = useState([])
+    const [arrStepList3] = useState([])
     const [markedList] = useState([])
     const [timeoutList] = useState([])
     const [arrStepShow, setArrStepShow] = useState([])
+    const [arrStepShow2, setArrStepShow2] = useState([])
     const [markedShow, setMarkedShow] = useState([])
     const [marked, setMarked] = useState([])
     const [stack] = useState([])
@@ -516,33 +519,96 @@ function ShowStep() {
             timeoutList.push(timeoutId)
         }
     }
-    const topoDFS = (num) => {
-        marked[num - 1].state = 1
+    const topo = () => {
+        var L1 = []
+        var L2 = []
+        var d = []
         for (let i = 1; i <= dataGraph.n; i++) {
-            if (dataGraph.matrix[num][i] === 1) {
-                if (marked[i - 1].state === 0) {
-                    topoDFS(i)
+            let x = 0
+            for (let j = 1; j <= dataGraph.n; j++) {
+                if (dataGraph.matrix[j][i] !== 0) {
+                    x++
                 }
             }
-        }
-        marked[num - 1].state = 2
-        stack.push(num)
-    }
-    const topo = () => {
-        marked.splice(0)
-        for (let i = 1; i <= dataGraph.n; i++) {
-            marked.push({ value: i, state: 0 })
-        }
-        for (let i = 1; i <= dataGraph.n; i++) {
-            if (marked[i - 1].state === 0) {
-                topoDFS(i)
-                console.log(i)
+            d.push(x)
+            if (x === 0) {
+                L1.push(i)
             }
+        }
+        markedList.push(Array.from(d))
+        arrStepList.push(Array.from(L1))
+        arrStepList2.push(Array.from(L2))
+        arrStepList3.push(Array.from(marked))
+        var rank = 1
+        while (L1.length > 0) {
+            L2 = []
+            for (let i = 0; i < L1.length; i++) {
+                let u = L1[i]
+                marked[u - 1] = rank
+                markedList.push(Array.from(d))
+                arrStepList.push(Array.from(L1))
+                arrStepList2.push(Array.from(L2))
+                arrStepList3.push(Array.from(marked))
+                for (let v = 1; v <= dataGraph.n; v++) {
+                    if (dataGraph.matrix[u][v] !== 0 && d[v - 1] > 0) {
+                        d[v - 1]--
+                        if (d[v - 1] === 0) {
+                            L2.push(v)
+                        }
+                        markedList.push(Array.from(d))
+                        arrStepList.push(Array.from(L1))
+                        arrStepList2.push(Array.from(L2))
+                        arrStepList3.push(Array.from(marked))
+                    }
+                }
+            }
+            L1 = Array.from(L2)
+            markedList.push(Array.from(d))
+            arrStepList.push(Array.from(L1))
+            arrStepList2.push(Array.from(L2))
+            arrStepList3.push(Array.from(marked))
+            rank++
         }
     }
     const runTopo = () => {
         resetAllData()
         topo()
+        showTopo()
+    }
+
+    const showTopo = () => {
+        var timeoutId
+        for (let i = 0; i < arrStepList.length; i++) {
+            timeoutId = setTimeout(() => {
+                var maxRank = arrStepList3[i].reduce((max, item) => item > max ? item : max, arrStepList3[i][0])
+                setPoints(points.map((item) => {
+                    var indexHeight = 0
+                    var sameRank = arrStepList3[i].reduce((c, rank, index) => {
+                        let x = 0
+                        if (rank === arrStepList3[i][item.value - 1]) {
+                            x = 1
+                            if ((index + 1) <= item.value) {
+                                indexHeight++
+                            }
+                        }
+                        return c + x
+                    }, 0)
+                    var x = (dimensionsGraphContainer.width / (maxRank + 1)) * arrStepList3[i][item.value - 1]
+                    var y = (dimensionsGraphContainer.height / (sameRank + 1) * indexHeight)
+                    return {
+                        ...item,
+                        position: {
+                            x: x === 0 ? dimensionsGraphContainer.width : x,
+                            y: y
+                        }
+                    }
+                }))
+                setArrStepShow(arrStepList[i])
+                setArrStepShow2(arrStepList2[i])
+                setMarkedShow(markedList[i])
+            }, time * i)
+        }
+
     }
 
     const kruskal = () => {
@@ -762,12 +828,15 @@ function ShowStep() {
         setMinEdgeShow(undefined)
         setMinValue(0)
         arrStepList.splice(0)
+        arrStepList2.splice(0)
+        arrStepList3.splice(0)
         markedList.splice(0)
         minNumTarjanList.splice(0)
         parentNumList.splice(0)
         piNumList.splice(0)
         stack.splice(0)
         arrStepShow.splice(0)
+        arrStepShow2.splice(0)
         markedShow.splice(0)
         minNumTarjanShow.splice(0)
         piNumShow.splice(0)
@@ -950,6 +1019,24 @@ function ShowStep() {
                 <div className="w-100 mb-2">
                     <MyButton value="Run" handleFunction={runTopo} />
                 </div>
+                <Col xs={4}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >DEGREE</div>
+                    <Stack>
+                        {markedShow !== undefined ? markedShow.map((item) => <ShowStepItemStack value={item} />) : ""}
+                    </Stack>
+                </Col>
+                <Col xs={4}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >LIST1</div>
+                    <Stack>
+                        {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={item} />) : ""}
+                    </Stack>
+                </Col>
+                <Col xs={4}>
+                    <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >LIST2</div>
+                    <Stack>
+                        {arrStepShow2 !== undefined ? arrStepShow2.map((item) => <ShowStepItemStack value={item} />) : ""}
+                    </Stack>
+                </Col>
             </Row> : ""}
             {algorithm === "Kruskal" ? <Row>
                 <div className="w-100 mb-2">

@@ -82,7 +82,8 @@ function App() {
       findItem,
       modeDirected, setModeDirected,
       modePath, setModePath,
-      algorithm, setAlgorithm
+      algorithm, setAlgorithm,
+      dimensionsGraphContainer
     }}>
       <Container fluid className={clsx("w-100 vh-100 position-fixed", styles.app)} ref={refHeightScreen}>
         <Row className="h-100">
