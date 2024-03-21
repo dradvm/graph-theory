@@ -26,7 +26,7 @@ function ShowStep() {
     const [minNumTarjanShow, setMinNumTarjanShow] = useState([])
     const color = ["#2986cc", "#6a329f", "#8fce00", "#f1c232", "#744700", "#1E7335", "#12f8c7", "#00d0ff", "#e13800", "#575e50"]
 
-    const infinity = 9999
+    const infinity = 99999
     const [piNum, setPiNum] = useState([])
     const [piNumList] = useState([])
     const [piNumShow, setPiNumShow] = useState([])
@@ -40,6 +40,9 @@ function ShowStep() {
     const [minEdgeList, setMinEdgeList] = useState([])
     const [minEdgeShow, setMinEdgeShow] = useState()
     const [minValue, setMinValue] = useState(0)
+
+    const [t, sett] = useState([])
+    const [T, setT] = useState([])
     const DFS = (num) => {
         const stack = []
         let u
@@ -274,7 +277,6 @@ function ShowStep() {
                     if (typeof minNum === "object") {
                         minNum = minNum[1]
                     }
-                    console.log(minNum)
                     var tarjanNum = markedList[i][minNum - 1]
                     return {
                         ...item,
@@ -322,7 +324,6 @@ function ShowStep() {
             }
 
         }
-        console.log(parentNum)
         piNumList.push(piNum.map((item) => item === infinity ? "\u221E" : item))
         arrStepList.push(piNum.map((item) => item === infinity ? "\u221E" : item))
         parentNumList.push(Array.from(parentNum))
@@ -442,7 +443,7 @@ function ShowStep() {
                     if (matrixFloyd[i - 1][j - 1] > matrixFloyd[i - 1][k - 1] + matrixFloyd[k - 1][j - 1]) {
                         const temp = Array.from(matrixFloyd.map((item) => Array.from(item)))
                         temp[i - 1][j - 1] = matrixFloyd[i - 1][k - 1] + " + " + matrixFloyd[k - 1][j - 1] + " < " + (matrixFloyd[i - 1][j - 1] === infinity ? "\u221E" : matrixFloyd[i - 1][j - 1])
-                        console.log(temp)
+
                         arrStepList.push([].concat(...temp).map((item) => item === infinity ? "NO PATH" : item))
                         matrixFloyd[i - 1][j - 1] = matrixFloyd[i - 1][k - 1] + matrixFloyd[k - 1][j - 1]
                     }
@@ -581,6 +582,7 @@ function ShowStep() {
         for (let i = 0; i < arrStepList.length; i++) {
             timeoutId = setTimeout(() => {
                 var maxRank = arrStepList3[i].reduce((max, item) => item > max ? item : max, arrStepList3[i][0])
+
                 setPoints(points.map((item) => {
                     var indexHeight = 0
                     var sameRank = arrStepList3[i].reduce((c, rank, index) => {
@@ -607,6 +609,7 @@ function ShowStep() {
                 setArrStepShow2(arrStepList2[i])
                 setMarkedShow(markedList[i])
             }, time * i)
+            timeoutList.push(timeoutId)
         }
 
     }
@@ -702,13 +705,175 @@ function ShowStep() {
                         arrEdgeState.push([item, false])
                     }
                 })
-                console.log(markedList[i])
-                console.log(arrEdgeState)
                 setArrStepShow(arrEdgeState)
             }, time * i)
             timeoutList.push(timeoutId)
         }
     }
+
+    const QLDA = () => {
+        var L = []
+        var L1 = []
+        var L2 = []
+        var d = []
+        for (let i = 1; i <= dataGraph.n; i++) {
+            let x = 0
+            for (let j = 1; j <= dataGraph.n; j++) {
+                if (dataGraph.matrix[j][i] !== 0) {
+                    x++
+                }
+            }
+            d.push(x)
+            if (x === 0) {
+                L1.push(i)
+            }
+        }
+        var rank = 1
+        arrStepList3.push(Array.from(marked))
+        while (L1.length > 0) {
+            L2 = []
+            for (let i = 0; i < L1.length; i++) {
+                let u = L1[i]
+                L.push(u)
+                marked[u - 1] = rank
+                arrStepList3.push(Array.from(marked))
+                for (let v = 1; v <= dataGraph.n; v++) {
+                    if (dataGraph.matrix[u][v] !== 0 && d[v - 1] > 0) {
+                        d[v - 1]--
+                        if (d[v - 1] === 0) {
+                            L2.push(v)
+                        }
+                    }
+                }
+            }
+            L1 = Array.from(L2)
+            rank++
+        }
+        for (let i = 0; i < L.length; i++) {
+            let u = L[i]
+            for (let v = 1; v <= dataGraph.n; v++) {
+                if (dataGraph.matrix[u][v]) {
+                    t[v - 1] = t[u - 1] + dataGraph.d[u - 1] > t[v - 1] ? t[u - 1] + dataGraph.d[u - 1] : t[v - 1]
+                }
+            }
+        }
+        T[dataGraph.n - 1] = t[dataGraph.n - 1]
+        for (let i = L.length - 1; i >= 0; i--) {
+            let v = L[i]
+            for (let u = 1; u <= dataGraph.n; u++) {
+                if (dataGraph.matrix[u][v]) {
+                    T[u - 1] = T[v - 1] - dataGraph.d[u - 1] < T[u - 1] ? T[v - 1] - dataGraph.d[u - 1] : T[u - 1]
+                }
+            }
+        }
+        var path = []
+        arrEdgeList.push(Array.from(path))
+        for (let i = dataGraph.n; i >= 1; i--) {
+            if (t[i - 1] === T[i - 1]) {
+                path.push(i)
+                arrEdgeList.push(Array.from(path))
+
+            }
+        }
+        if (path.indexOf(dataGraph.n - 1) === -1) {
+            path.push(dataGraph.n - 1)
+            arrEdgeList.push(Array.from(path))
+        }
+    }
+    const runQLDA = () => {
+        resetAllData()
+        QLDA()
+        showQLDA()
+    }
+    const showQLDA = () => {
+        var timeoutId
+        var newPointPosition
+        for (let i = 0; i < arrStepList3.length; i++) {
+            timeoutId = setTimeout(() => {
+                var maxRank = arrStepList3[i].reduce((max, item) => item > max ? item : max, arrStepList3[i][0])
+                setPoints(points.map((item) => {
+                    var indexHeight = 0
+                    var newState = state.idle
+                    var sameRank = arrStepList3[i].reduce((c, rank, index) => {
+                        let x = 0
+                        if (rank === arrStepList3[i][item.value - 1]) {
+                            x = 1
+                            if ((index + 1) <= item.value) {
+                                indexHeight++
+                            }
+                        }
+                        return c + x
+                    }, 0)
+                    var x = (dimensionsGraphContainer.width / (maxRank + 1)) * arrStepList3[i][item.value - 1]
+                    var y = (dimensionsGraphContainer.height / (sameRank + 1) * indexHeight)
+                    return {
+                        ...item,
+                        state: newState,
+                        position: {
+                            x: x === 0 ? dimensionsGraphContainer.width : x,
+                            y: y
+                        }
+                    }
+                }))
+            }, time * i)
+            timeoutList.push(timeoutId)
+        }
+        if (true) {
+            let i = arrStepList3.length - 1
+            var maxRank = arrStepList3[i].reduce((max, item) => item > max ? item : max, arrStepList3[i][0])
+            newPointPosition = points.map((item) => {
+                var indexHeight = 0
+
+                var sameRank = arrStepList3[i].reduce((c, rank, index) => {
+                    let x = 0
+                    if (rank === arrStepList3[i][item.value - 1]) {
+                        x = 1
+                        if ((index + 1) <= item.value) {
+                            indexHeight++
+                        }
+                    }
+                    return c + x
+                }, 0)
+                var x = (dimensionsGraphContainer.width / (maxRank + 1)) * arrStepList3[i][item.value - 1]
+                var y = (dimensionsGraphContainer.height / (sameRank + 1) * indexHeight)
+                return {
+                    ...item,
+                    position: {
+                        x: x === 0 ? dimensionsGraphContainer.width : x,
+                        y: y
+                    },
+                }
+            })
+        }
+        for (let i = 0; i < arrEdgeList.length; i++) {
+            timeoutId = setTimeout(() => {
+                setPoints(Array.from(newPointPosition).map((item) => {
+                    var newState = state.idle
+                    if (arrEdgeList[i].indexOf(item.value) > -1) {
+                        newState = state.marked
+                    }
+                    return {
+                        ...item,
+                        state: newState
+                    }
+                }))
+                setEdges(edges.map((item) => {
+                    var newState = state.idle;
+                    if (arrEdgeList[i].indexOf(item.u) > -1 && arrEdgeList[i].indexOf(item.v) > -1) {
+                        if (arrEdgeList[i].indexOf(item.v) + 1 === arrEdgeList[i].indexOf(item.u)) {
+                            newState = state.marked
+                        }
+                    }
+                    return {
+                        ...item,
+                        state: newState
+                    }
+                }))
+            }, (i + arrStepList3.length) * time)
+            timeoutList.push(timeoutId)
+        }
+    }
+
 
     const prim = (num) => {
         piNum[num - 1] = 0
@@ -825,6 +990,8 @@ function ShowStep() {
         setMinNumTarjan(Array(dataGraph.n).fill(0))
         setPiNum(Array(dataGraph.n).fill(infinity))
         setParentNum(Array(dataGraph.n).fill(-1))
+        sett(Array(dataGraph.n).fill(0))
+        setT(Array(dataGraph.n).fill(infinity))
         setMinEdgeShow(undefined)
         setMinValue(0)
         arrStepList.splice(0)
@@ -1037,6 +1204,11 @@ function ShowStep() {
                         {arrStepShow2 !== undefined ? arrStepShow2.map((item) => <ShowStepItemStack value={item} />) : ""}
                     </Stack>
                 </Col>
+            </Row> : ""}
+            {algorithm === "QLDA" ? <Row>
+                <div className="w-100 mb-2">
+                    <MyButton value="Run" handleFunction={runQLDA} />
+                </div>
             </Row> : ""}
             {algorithm === "Kruskal" ? <Row>
                 <div className="w-100 mb-2">

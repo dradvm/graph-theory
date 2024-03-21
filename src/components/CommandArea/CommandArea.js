@@ -24,6 +24,10 @@ function CommandArea() {
 
     const runInput = (e) => {
         var error = false
+        if (valueInput.trim() === "") {
+            error = true
+            return
+        }
         Array.from(valueInput).forEach((char) => {
             if (char !== "\n" && char !== " " && char !== "-" && !regNumberPos.test(char) && !error) {
                 error = true
@@ -32,8 +36,12 @@ function CommandArea() {
         })
         const data = valueInput.split("\n")
         const dataGraph = data.shift().split(" ")
-        const n = Number(dataGraph[0])
-        const m = Number(dataGraph[1])
+        var n = Number(dataGraph[0])
+        var m = Number(dataGraph[1])
+        var d = []
+        if (algorithm === "QLDA") {
+            d = Array.from(data.pop().split(" ").map((item) => Number(item)))
+        }
         const matrix = ["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall"].indexOf(algorithm) > -1 ? Array.from({ length: 100 }).map((item) => Array(100).fill(-1000)) : Array.from({ length: 100 }).map((item) => Array(100).fill(0))
         const dataEdge = data.map((item) => item.split(" ")).map((edge) => {
             {
@@ -51,13 +59,49 @@ function CommandArea() {
                         matrix[v][u] = 1
                     }
                 }
-                return { u: u, v: v, w: modePath ? Number(edge[2]) : NaN, state: state.idle }
+                if (algorithm === "QLDA") {
+                    matrix[u][v] = d[u - 1]
+                }
+                var w = modePath ? Number(edge[2]) : NaN
+                w = algorithm === "QLDA" ? d[u - 1] : w
+                return { u: u, v: v, w: w, state: state.idle }
 
             }
         })
         if (dataEdge.length !== m && !error) {
             error = true
             runError("Your edges does not enough!!")
+        }   
+        if (d.length != n && d.length > 0) {
+            error = true
+            runError("Your values does not match number of point")
+        }
+        if (algorithm === "QLDA") {
+            var a = n + 1
+            var b = n + 2
+            for (let i = 1; i <= n; i++) {
+                var deg_a = 0
+                var deg_b = 0
+                for (let j = 1; j <= n; j++) {
+                    if (matrix[j][i] !== 0) {
+                        deg_a++
+                    }
+                    if (matrix[i][j] !== 0) {
+                        deg_b++
+                    }
+                }
+                if (deg_a === 0) {
+                    matrix[a][i] = 9999
+                    dataEdge.push({ u: a, v: i, w: 0, state: state.idle })
+                    m++
+                }
+                if (deg_b === 0) {
+                    matrix[i][b] = d[i - 1]
+                    dataEdge.push({ u: i, v: b, w: d[i - 1], state: state.idle })
+                    m++
+                }
+            }
+            n += 2
         }
         if (!error) {
             dataEdge.forEach((edge) => {
@@ -75,13 +119,13 @@ function CommandArea() {
                 }
             })
         }
-
         if (!error) {
             setDataGraph({
                 n: n,
-                points: [...Array(Number(dataGraph[0])).keys()].map((i) => i + 1),
+                points: [...Array(n).keys()].map((i) => i + 1),
                 edges: dataEdge,
-                matrix: matrix
+                matrix: matrix,
+                d: d
             })
         }
     }
@@ -97,26 +141,32 @@ function CommandArea() {
     }
     const changeModeDirected = () => {
         resetInput()
-        setModeDirected(!modeDirected)
-    }
-    const changeModePath = () => {
-        resetInput()
-        if (["DFS", "BFS"].indexOf(algorithm) > -1) {
+        if (["Tarjan", "Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "Topo", "Kruskal", "Prim", "QLDA"].indexOf(algorithm) > -1) {
 
         }
         else {
+            setModeDirected(!modeDirected)
+        }
+    }
+    const changeModePath = () => {
+        resetInput()
+        if (algorithm === null) {
             setModePath(!modePath)
         }
 
     }
     useEffect(() => {
         resetInput()
-        if (algorithm === "Tarjan") {
+        if (["Tarjan", "Topo"].indexOf(algorithm) > -1) {
             setModeDirected(true)
             setModePath(false)
         }
-        else if (["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall"].indexOf(algorithm) > -1) {
+        else if (["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "QLDA"].indexOf(algorithm) > -1) {
             setModeDirected(true)
+            setModePath(true)
+        }
+        else if (["Kruskal", "Prim"].indexOf(algorithm) > -1) {
+            setModeDirected(false)
             setModePath(true)
         }
         else {

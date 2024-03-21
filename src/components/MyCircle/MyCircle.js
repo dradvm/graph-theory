@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { Circle, Group, Text } from "react-konva";
 
 function MyCircle({ point, handleRender, radius, size, border, color, area, state }) {
-    const { algorithm } = useContext(GraphContext)
+    const { algorithm, dataGraph } = useContext(GraphContext)
     const [current, setCurrent] = useState(point)
     const [draggable, setDraggable] = useState(true)
     const handleCurrent = (e) => {
@@ -40,8 +40,16 @@ function MyCircle({ point, handleRender, radius, size, border, color, area, stat
 
     useEffect(() => {
         var text = point.value
-        if (point.secondText !== undefined) {
+        if (point.secondText !== undefined && algorithm === "Tarjan") {
             text = text + " | " + point.secondText
+        }
+        if (algorithm === "QLDA") {
+            if (dataGraph.n - 1 === point.value) {
+                text = "\u03b1"
+            }
+            else if (dataGraph.n === point.value) {
+                text = "\u03b2"
+            }
         }
         setCurrent({
             ...point,
