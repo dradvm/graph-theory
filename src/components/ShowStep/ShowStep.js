@@ -984,6 +984,142 @@ function ShowStep() {
         }
     }
 
+    const buildH = (G) => {
+        var H = []
+        var point = Array.from(new Set(G.edges.reduce((arr, item) => arr.concat([item.u, item.v]), [])))
+        point.sort()
+        for (let i = 0; i < point.length; i++) {
+            var v = point[i]
+            var edge = { w: 9999 }
+            for (let e = 0; e < G.edges.length; e++) {
+                if (G.edges[e].v === v) {
+                    if (G.edges[e].w < edge.w) {
+                        edge = G.edges[e]
+                    }
+                }
+            }
+            if (edge.w !== 9999) {
+                H.push(edge)
+            }
+        }
+        return { n: dataGraph.n, edges: H }
+    }
+
+    const isCycle = (H) => {
+        var point = Array.from(new Set(H.edges.reduce((arr, item) => arr.concat([item.u, item.v]), [])))
+
+        for (let i = 0; i < point.length; i++) {
+            var root = point[i]
+            var u = root
+            while (true) {
+                var edge = H.edges.find((item) => item.u === u)
+                if (edge !== undefined) {
+                    if (edge.v === root) {
+                        return true
+                    }
+                    u = edge.v
+                }
+                else {
+                    break
+                }
+            }
+        }
+        return false;
+    }
+    const contract = (G, H) => {
+        var bplt = []
+        var markPoint = []
+        var point = Array.from(new Set(G.edges.reduce((arr, item) => arr.concat([item.u, item.v]), [])))
+        H.edges.forEach((item) => {
+            var root = item.u
+            var u = root
+            var arr = [item.u]
+            if (markPoint.indexOf(root) === -1) {
+                while (true) {
+                    var edge = H.edges.find((e) => e.u === u)
+                    if (edge.v === root) {
+                        break;
+                    }
+                    if (edge !== undefined) {
+                        u = edge.v
+                        arr.push(u)
+                    }
+                    else {
+                        break;
+                    }
+                }
+                markPoint = Array.from(new Set(markPoint.concat(arr)))
+                bplt.push(arr)
+            }
+
+        })
+        for (let i = 0; i < point.length; i++) {
+            if (markPoint.indexOf(point[i]) === -1) {
+                bplt.push([point[i]])
+            }
+        }
+        var edgeG1 = []
+        G.edges.forEach((item) => {
+            var u = bplt.find((bp) => bp.indexOf(item.u) > -1)
+            var v = bplt.find((bp) => bp.indexOf(item.v) > -1)
+            if (u !== v) {
+                var edge = H.edges.find((edge) => edge.v === item.v)
+                var w = item.w
+                if (edge !== undefined) {
+                    w -= edge.w
+                }
+                edgeG1.push({ u, v, w, state: state.idle, linkU: item.u, linkV: item.v })
+            }
+        })
+        edgeG1.sort()
+        return { n: G.n, edges: edgeG1 }
+    }
+    const expand = (H1, H, G1) => {
+        H1.edges.forEach((edge) => {
+            var ed = H.edges.find((item) => item.v === edge.linkV)
+            var ed2 = G1.edges.find((item) => item.u === edge.linkU && item.v === edge.linkV)
+            H.edges = H.edges.filter((item) => item !== ed)
+            H.edges.push({ ...edge, u: edge.linkU, v: edge.linkV, w: edge.w + ed.w, linkU: ed2.linkU, linkV: ed2.linkV })
+        })
+    }
+
+    const chuLiu = () => {
+        const G = []
+        const H = []
+        const newEdge = dataGraph.edges.map((item) => {
+            return {
+                ...item,
+                linkU: -1,
+                linkV: -1
+            }
+        })
+        G.push({ n: dataGraph.n, edges: newEdge })
+        var t = 0
+        while (true) {
+            H.push(buildH(G[t]))
+            if (!isCycle(H[t])) {
+                break;
+            }
+            G.push(contract(G[t], H[t]))
+            t++
+        }
+        while (t > 0) {
+            expand(H[t], H[t - 1], G[t - 1])
+            t--
+        }
+
+    }
+    const runChuLiu = () => {
+        resetAllData()
+        chuLiu()
+        showChuLiu()
+    }
+    const showChuLiu = () => {
+
+        console.log(points)
+        console.log(edges)
+    }
+
     const resetAll = () => {
         setMarked(Array(dataGraph.n).fill(0))
         setNumTarjan(Array(dataGraph.n).fill(0))
@@ -1260,6 +1396,12 @@ function ShowStep() {
                     <ShowStepItemStack value={minValue} />
                 </Col>
             </Row> : ""}
+            {algorithm === "ChuLiu" ? <Row>
+                <div className="w-100 mb-2">
+                    <MyButton value="Run" handleFunction={runChuLiu} />
+                </div>
+            </Row> : ""}
+
 
         </Container>
     );

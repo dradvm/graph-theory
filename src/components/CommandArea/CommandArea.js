@@ -141,7 +141,7 @@ function CommandArea() {
     }
     const changeModeDirected = () => {
         resetInput()
-        if (["Tarjan", "Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "Topo", "Kruskal", "Prim", "QLDA"].indexOf(algorithm) > -1) {
+        if (["DFS", "BFS"].indexOf(algorithm) === -1) {
 
         }
         else {
@@ -161,7 +161,7 @@ function CommandArea() {
             setModeDirected(true)
             setModePath(false)
         }
-        else if (["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "QLDA"].indexOf(algorithm) > -1) {
+        else if (["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "QLDA", "ChuLiu"].indexOf(algorithm) > -1) {
             setModeDirected(true)
             setModePath(true)
         }

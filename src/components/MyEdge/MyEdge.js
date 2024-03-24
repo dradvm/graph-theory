@@ -27,14 +27,6 @@ function MyEdge({ edge, radius, border }) {
         }
         return check
     }
-    const isPath = () => {
-        if (["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall"].indexOf(algorithm) > -1) {
-            if (edge.isPath) {
-                return true
-            }
-        }
-        return false
-    }
     useEffect(() => {
         const pux = findItem(edge.u).position.x
         const puy = findItem(edge.u).position.y
