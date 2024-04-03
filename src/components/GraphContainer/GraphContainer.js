@@ -6,7 +6,7 @@ import { useContext, useEffect, useState } from "react";
 import { GraphContext } from "@/App";
 import MyEdge from "../MyEdge/MyEdge";
 function GraphContainer({ dimensions }) {
-    const { dataGraph, points, setPoints, edges, setEdges, handlePointsSetPosition, state } = useContext(GraphContext)
+    const { dataGraph, points, setPoints, edges, setEdges, handlePointsSetPosition, algorithm, state } = useContext(GraphContext)
 
     const size = 200
     const radius = 32

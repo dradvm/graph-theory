@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { Arrow, Circle, Group, Text } from "react-konva";
 
 function MyEdge({ edge, radius, border }) {
-    const { modeDirected, modePath, edges, findItem, points, state, algorithm } = useContext(GraphContext)
+    const { modeDirected, modePath, edges, points, state, algorithm } = useContext(GraphContext)
     const [current, setCurrent] = useState({
         pux: null,
         puy: null,
@@ -18,20 +18,40 @@ function MyEdge({ edge, radius, border }) {
     const borderEdge = 2
 
     const isReverseEdge = (edge) => {
-        var check = false
-        for (let i = 0; i < edges.length; i++) {
-            if (edges[i].u === edge.v && edges[i].v === edge.u) {
-                check = true;
-                break
-            }
+        return edges.find((item) => item.u === edge.v && item.v === edge.u) !== undefined;
+    }
+    const findItem = (value) => {
+        return points.find((item) => item.value === value)
+    }
+    const findIndexItem = (edge) => {
+        var a = edges.filter((item) => item.u === edge.u && item.v === edge.v)
+        a.sort()
+        return a.indexOf(edge) + 1
+    }
+    const multipleEdge = (edge) => {
+        var a = edges.filter((item) => item.u === edge.u && item.v === edge.v)
+        return a.length !== 1
+    }
+    const isCurve = (edge) => {
+
+        if (isReverseEdge(edge)) {
+            return true
         }
-        return check
+        if (multipleEdge(edge)) {
+            if (findIndexItem(edge) === 1) {
+                return false
+            }
+            return true
+        }
+        return false
     }
     useEffect(() => {
+        const index = findIndexItem(edge)
         const pux = findItem(edge.u).position.x
         const puy = findItem(edge.u).position.y
         const pvx = findItem(edge.v).position.x
         const pvy = findItem(edge.v).position.y
+        const curve = algorithm === "ChuLiu" ? 25 : 20
         const degCos = Math.acos(Math.abs(pux - pvx) / Math.sqrt(Math.pow(pvx - pux, 2) + Math.pow(pvy - puy, 2)))
         const dicX = pux < pvx ? -1 : 1
         const dicY = puy < pvy ? -1 : 1
@@ -42,8 +62,8 @@ function MyEdge({ edge, radius, border }) {
         const pos2 = {
             x: (pux + pvx) / 2,
             y: (puy + pvy) / 2,
-            start: (pux + pvx) / 2 + dicX * Math.cos(degCos * Math.PI / 4) * 20,
-            end: (puy + pvy) / 2 - dicY * Math.cos(degCos * Math.PI / 4) * 20,
+            start: (pux + pvx) / 2 + dicX * Math.cos(degCos * Math.PI / 4) * curve * index,
+            end: (puy + pvy) / 2 - dicY * Math.cos(degCos * Math.PI / 4) * curve * index,
             tension: 0.5
         }
         const pos3 = {
@@ -64,10 +84,10 @@ function MyEdge({ edge, radius, border }) {
         >
             {modeDirected && edge.u !== edge.v ? <Arrow
                 points={[
-                    isReverseEdge(edge) ? current.pos1.x : current.pux,
-                    isReverseEdge(edge) ? current.pos1.y : current.puy,
-                    !isReverseEdge(edge) ? current.pos2.x : current.pos2.start,
-                    !isReverseEdge(edge) ? current.pos2.y : current.pos2.end,
+                    isCurve(edge) ? current.pos1.x : current.pux,
+                    isCurve(edge) ? current.pos1.y : current.puy,
+                    !isCurve(edge) ? current.pos2.x : current.pos2.start,
+                    !isCurve(edge) ? current.pos2.y : current.pos2.end,
                     modeDirected ? current.pos3.x : current.pvx,
                     modeDirected ? current.pos3.y : current.pvy
                 ]}
@@ -79,8 +99,8 @@ function MyEdge({ edge, radius, border }) {
                 points={[
                     current.pux,
                     current.puy,
-                    !isReverseEdge(edge) ? current.pos2.x : current.pos2.start,
-                    !isReverseEdge(edge) ? current.pos2.y : current.pos2.end,
+                        !isCurve(edge) ? current.pos2.x : current.pos2.start,
+                        !isCurve(edge) ? current.pos2.y : current.pos2.end,
                     current.pvx,
                     current.pvy
                 ]}
@@ -134,8 +154,8 @@ function MyEdge({ edge, radius, border }) {
 
                 : ""}
             {modePath && edge.u !== edge.v && Object.keys(current.pos2).length !== 0 ? <Group
-                x={isReverseEdge(edge) ? current.pos2.start : current.pos2.x}
-                y={isReverseEdge(edge) ? current.pos2.end : current.pos2.y}
+                x={isCurve(edge) ? current.pos2.start : current.pos2.x}
+                y={isCurve(edge) ? current.pos2.end : current.pos2.y}
             >
                 <Circle
                     radius={radiusEdge}

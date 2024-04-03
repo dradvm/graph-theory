@@ -6,7 +6,7 @@ import MyButton from "../MyButton/MyButton";
 import clsx from "clsx";
 import styles from "./ShowStep.module.scss"
 function ShowStep() {
-    const { dataGraph, points, setPoints, state, algorithm, time, modeDirected, setModeDirected, modePath, setModePath, edges, setEdges, dimensionsGraphContainer } = useContext(GraphContext)
+    const { dataGraph, setDataGraph, points, setPoints, state, algorithm, time, edges, setEdges, dimensionsGraphContainer } = useContext(GraphContext)
     const [arrStepList] = useState([])
     const [arrStepList2] = useState([])
     const [arrStepList3] = useState([])
@@ -14,6 +14,7 @@ function ShowStep() {
     const [timeoutList] = useState([])
     const [arrStepShow, setArrStepShow] = useState([])
     const [arrStepShow2, setArrStepShow2] = useState([])
+    const [arrStepShow3, setArrStepShow3] = useState([])
     const [markedShow, setMarkedShow] = useState([])
     const [marked, setMarked] = useState([])
     const [stack] = useState([])
@@ -43,6 +44,7 @@ function ShowStep() {
 
     const [t, sett] = useState([])
     const [T, setT] = useState([])
+
     const DFS = (num) => {
         const stack = []
         let u
@@ -433,7 +435,7 @@ function ShowStep() {
         matrixFloyd.forEach((item, index) => {
             matrixFloyd[index] = item.slice(1, item.length)
         })
-        arrStepList.push([].concat(...matrixFloyd).map((item) => item === infinity ? "NO PATH" : item))
+        arrStepList2.push([].concat(...matrixFloyd).map((item) => item === infinity ? "NO PATH" : item))
         for (let k = 1; k <= dataGraph.n; k++) {
             for (let i = 1; i <= dataGraph.n; i++) {
                 for (let j = 1; j <= dataGraph.n; j++) {
@@ -444,14 +446,14 @@ function ShowStep() {
                         const temp = Array.from(matrixFloyd.map((item) => Array.from(item)))
                         temp[i - 1][j - 1] = matrixFloyd[i - 1][k - 1] + " + " + matrixFloyd[k - 1][j - 1] + " < " + (matrixFloyd[i - 1][j - 1] === infinity ? "\u221E" : matrixFloyd[i - 1][j - 1])
 
-                        arrStepList.push([].concat(...temp).map((item) => item === infinity ? "NO PATH" : item))
+                        arrStepList2.push([].concat(...temp).map((item) => item === infinity ? "NO PATH" : item))
                         matrixFloyd[i - 1][j - 1] = matrixFloyd[i - 1][k - 1] + matrixFloyd[k - 1][j - 1]
                     }
                 }
             }
         }
 
-        arrStepList.push([].concat(...matrixFloyd).map((item) => item === infinity ? "NO PATH" : item))
+        arrStepList2.push([].concat(...matrixFloyd).map((item) => item === infinity ? "NO PATH" : item))
         markedList.push(arr)
     }
     const runFloydWarshall = () => {
@@ -462,9 +464,9 @@ function ShowStep() {
     const showFloydWarshall = () => {
         setMarkedShow(markedList[0])
         var timeoutId
-        for (let i = 0; i < arrStepList.length; i++) {
+        for (let i = 0; i < arrStepList2.length; i++) {
             timeoutId = setTimeout(() => {
-                setArrStepShow(arrStepList[i])
+                setArrStepShow2(arrStepList2[i])
             }, time * i)
         }
         timeoutList.push(timeoutId)
@@ -705,7 +707,7 @@ function ShowStep() {
                         arrEdgeState.push([item, false])
                     }
                 })
-                setArrStepShow(arrEdgeState)
+                setArrStepShow3(arrEdgeState)
             }, time * i)
             timeoutList.push(timeoutId)
         }
@@ -977,7 +979,7 @@ function ShowStep() {
                     }
                 }))
                 setPiNumShow(piNumList[i])
-                setArrStepShow(arrStepList[i])
+                setArrStepShow3(arrStepList[i])
                 setMinEdgeShow(minEdgeList[i])
             }, time * i)
             timeoutList.push(timeoutId)
@@ -988,6 +990,8 @@ function ShowStep() {
         var H = []
         var point = Array.from(new Set(G.edges.reduce((arr, item) => arr.concat([item.u, item.v]), [])))
         point.sort()
+        var HShow = []
+        var HShow2 = []
         for (let i = 0; i < point.length; i++) {
             var v = point[i]
             var edge = { w: 9999 }
@@ -1000,64 +1004,138 @@ function ShowStep() {
             }
             if (edge.w !== 9999) {
                 H.push(edge)
+                HShow2.push(edge)
             }
         }
-        return { n: dataGraph.n, edges: H }
+        HShow = G.edges.map((item) => {
+
+            return {
+                ...item,
+                state: H.indexOf(item) > -1 ? state.marked : state.pending
+            }
+        })
+        arrStepList.push({ points: point, edges: HShow })
+        arrStepList.push({ points: point, edges: HShow2 })
+        return { points: point, edges: H }
     }
 
     const isCycle = (H) => {
         var point = Array.from(new Set(H.edges.reduce((arr, item) => arr.concat([item.u, item.v]), [])))
 
+        point.sort()
+        var bplt = []
+        var k = 1
+        var numChuLui = Array(point.length).fill(0)
+        var minNumChuLui = Array(point.length).fill(0)
+        var stackChuLui = []
+        var dataGraphHMatrix = []
         for (let i = 0; i < point.length; i++) {
-            var root = point[i]
-            var u = root
-            while (true) {
-                var edge = H.edges.find((item) => item.u === u)
-                if (edge !== undefined) {
-                    if (edge.v === root) {
-                        return true
+            var row = []
+            for (let j = 0; j < point.length; j++) {
+                row.push(0)
+            }
+            dataGraphHMatrix.push(row)
+        }
+        H.edges.forEach((item) => {
+            dataGraphHMatrix[point.indexOf(item.u)][point.indexOf(item.v)] = item.w
+        })
+        function SCC(num) {
+            stackChuLui.push(num)
+            numChuLui[num] = k
+            minNumChuLui[num] = k
+            k++
+            for (let i = 0; i < point.length; i++) {
+                if (dataGraphHMatrix[num][i] !== 0) {
+                    if (numChuLui[i] === 0) {
+                        SCC(i)
+                        var num1 = minNumChuLui[num]
+                        var num2 = minNumChuLui[i]
+                        minNumChuLui[num] = Math.min(num1, num2)
                     }
-                    u = edge.v
-                }
-                else {
-                    break
+                    else if (stackChuLui.indexOf(i) > -1) {
+                        var num1 = minNumChuLui[num]
+                        var num2 = numChuLui[i]
+                        minNumChuLui[num] = Math.min(num1, num2)
+                    }
                 }
             }
+            if (numChuLui[num] === minNumChuLui[num]) {
+                var x
+                var strongConnect = []
+                do {
+                    x = stackChuLui.pop()
+                    strongConnect.push(point[x])
+
+                } while (x != num)
+                bplt.push(strongConnect)
+            }
         }
-        return false;
+        for (let i = 0; i < point.length; i++) {
+            if (numChuLui[i] === 0) {
+                SCC(i)
+            }
+        }
+        return bplt.length < point.length;
     }
     const contract = (G, H) => {
-        var bplt = []
-        var markPoint = []
         var point = Array.from(new Set(G.edges.reduce((arr, item) => arr.concat([item.u, item.v]), [])))
+
+        point.sort()
+        var bplt = []
+        var k = 1
+        var numChuLui = Array(point.length).fill(0)
+        var minNumChuLui = Array(point.length).fill(0)
+        var stackChuLui = []
+        var dataGraphHMatrix = []
+        for (let i = 0; i < point.length; i++) {
+            var row = []
+            for (let j = 0; j < point.length; j++) {
+                row.push(0)
+            }
+            dataGraphHMatrix.push(row)
+        }
         H.edges.forEach((item) => {
-            var root = item.u
-            var u = root
-            var arr = [item.u]
-            if (markPoint.indexOf(root) === -1) {
-                while (true) {
-                    var edge = H.edges.find((e) => e.u === u)
-                    if (edge.v === root) {
-                        break;
+            dataGraphHMatrix[point.indexOf(item.u)][point.indexOf(item.v)] = item.w
+        })
+        function SCC(num) {
+            stackChuLui.push(num)
+            numChuLui[num] = k
+            minNumChuLui[num] = k
+            k++
+            for (let i = 0; i < point.length; i++) {
+                if (dataGraphHMatrix[num][i] !== 0) {
+                    if (numChuLui[i] === 0) {
+                        SCC(i)
+                        var num1 = minNumChuLui[num]
+                        var num2 = minNumChuLui[i]
+                        minNumChuLui[num] = Math.min(num1, num2)
                     }
-                    if (edge !== undefined) {
-                        u = edge.v
-                        arr.push(u)
-                    }
-                    else {
-                        break;
+                    else if (stackChuLui.indexOf(i) > -1) {
+                        var num1 = minNumChuLui[num]
+                        var num2 = numChuLui[i]
+                        minNumChuLui[num] = Math.min(num1, num2)
                     }
                 }
-                markPoint = Array.from(new Set(markPoint.concat(arr)))
-                bplt.push(arr)
             }
+            if (numChuLui[num] === minNumChuLui[num]) {
+                var x
+                var strongConnect = []
+                do {
+                    x = stackChuLui.pop()
+                    strongConnect.push(point[x])
 
-        })
-        for (let i = 0; i < point.length; i++) {
-            if (markPoint.indexOf(point[i]) === -1) {
-                bplt.push([point[i]])
+                } while (x != num)
+                strongConnect.sort()
+                bplt.push(strongConnect)
             }
         }
+        for (let i = 0; i < point.length; i++) {
+            if (numChuLui[i] === 0) {
+                SCC(i)
+            }
+        }
+        bplt.sort()
+        console.log(bplt)
         var edgeG1 = []
         G.edges.forEach((item) => {
             var u = bplt.find((bp) => bp.indexOf(item.u) > -1)
@@ -1065,24 +1143,35 @@ function ShowStep() {
             if (u !== v) {
                 var edge = H.edges.find((edge) => edge.v === item.v)
                 var w = item.w
-                if (edge !== undefined) {
+                if (edge !== undefined && v.length > 1) {
                     w -= edge.w
                 }
                 edgeG1.push({ u, v, w, state: state.idle, linkU: item.u, linkV: item.v })
             }
         })
         edgeG1.sort()
-        return { n: G.n, edges: edgeG1 }
+        return { points: bplt, edges: edgeG1 }
     }
     const expand = (H1, H, G1) => {
-        H1.edges.forEach((edge) => {
-            var ed = H.edges.find((item) => item.v === edge.linkV)
-            var ed2 = G1.edges.find((item) => item.u === edge.linkU && item.v === edge.linkV)
-            H.edges = H.edges.filter((item) => item !== ed)
-            H.edges.push({ ...edge, u: edge.linkU, v: edge.linkV, w: edge.w + ed.w, linkU: ed2.linkU, linkV: ed2.linkV })
-        })
-    }
+        var pointH1 = Array.from(new Set(H1.edges.reduce((arr, item) => arr.concat([item.linkU, item.linkV]), [])))
+        var pointH = Array.from(new Set(H.edges.reduce((arr, item) => arr.concat([item.u, item.v]), [])))
 
+        H1.edges.forEach((edgeH1) => {
+            var preU = edgeH1.linkU
+            var preV = edgeH1.linkV
+            var edgeG1 = G1.edges.find((item) => item.u === preU && item.v === preV)
+            var edgeH1 = H.edges.find((item) => item.u === preU && item.v === preV)
+            if (edgeH1 === undefined) {
+                H.edges.push(edgeG1)
+                var edgeH = H.edges.find((item) => item.v === edgeG1.v)
+                if (edgeH !== undefined) {
+                    H.edges = H.edges.filter((item) => item !== edgeH)
+                }
+            }
+        })        
+        console.log("--")
+
+    }
     const chuLiu = () => {
         const G = []
         const H = []
@@ -1102,12 +1191,16 @@ function ShowStep() {
             }
             G.push(contract(G[t], H[t]))
             t++
+            arrStepList.push(G[t])
         }
         while (t > 0) {
             expand(H[t], H[t - 1], G[t - 1])
+            console.log(H[t])
+            arrStepList2.push(H[t])
             t--
         }
-
+        console.log(H[0])
+        arrStepList2.push(H[0])
     }
     const runChuLiu = () => {
         resetAllData()
@@ -1115,12 +1208,71 @@ function ShowStep() {
         showChuLiu()
     }
     const showChuLiu = () => {
-
-        console.log(points)
-        console.log(edges)
+        var arrGraphG = [{ points: points, edges: edges }]
+        var arrGraphDataPointPosH = [{ points: points, edges: edges }]
+        const d = dimensionsGraphContainer
+        const size = 200
+        var pointsNew = points
+        console.log(arrStepList)
+        console.log(arrStepList2)
+        if (points.length !== dataGraph.n || edges.length !== dataGraph.edges.length) {
+            return
+        }
+        for (let i = 0; i < arrStepList.length; i++) {
+            var listPoint = arrStepList[i].points
+            if (pointsNew.length !== listPoint.length) {
+                var pointsNew = listPoint.map((item) => {
+                    var posX = 0
+                    var posY = 0
+                    if (Array.isArray(item)) {
+                        item.forEach((item2) => {
+                            var ps = pointsNew.find((p) => p.value === item2).position
+                            posX += ps.x
+                            posY += ps.y
+                        })
+                        posX /= item.length
+                        posY /= item.length
+                    }
+                    else {
+                        return pointsNew.find((p) => p.value === item)
+                    }
+                    return {
+                        value: item,
+                        position: {
+                            x: posX,
+                            y: posY
+                        },
+                        secondText: undefined,
+                        state: state.idle
+                    }
+                })
+                arrGraphDataPointPosH.push({ points: pointsNew, edges: arrStepList[i].edges })
+            }
+            arrGraphG.push({ points: pointsNew, edges: arrStepList[i].edges })
+        }
+        var arrGraphH = []
+        for (let i = 0; i < arrStepList2.length; i++) {
+            var listPoint = arrStepList2[i].points
+            var pointsNew = listPoint.map((item) => {
+                var po = arrGraphDataPointPosH[arrStepList2.length - 1 - i].points.find((arrG) => item === arrG.value)
+                return {
+                    ...po
+                }
+            })
+            arrGraphH.push({ points: pointsNew, edges: arrStepList2[i].edges })
+        }
+        var arrGraph = [].concat(arrGraphG, arrGraphH)
+        for (let i = 0; i < arrGraph.length; i++) {
+            var timeoutId = setTimeout(() => {
+                setPoints(arrGraph[i].points)
+                setEdges(arrGraph[i].edges)
+            }, time * i)
+            timeoutList.push(timeoutId)
+        }
     }
 
     const resetAll = () => {
+
         setMarked(Array(dataGraph.n).fill(0))
         setNumTarjan(Array(dataGraph.n).fill(0))
         setMinNumTarjan(Array(dataGraph.n).fill(0))
@@ -1130,6 +1282,10 @@ function ShowStep() {
         setT(Array(dataGraph.n).fill(infinity))
         setMinEdgeShow(undefined)
         setMinValue(0)
+        timeoutList.forEach((timeoutId) => {
+            clearTimeout(timeoutId)
+        })
+        timeoutList.splice(0)
         arrStepList.splice(0)
         arrStepList2.splice(0)
         arrStepList3.splice(0)
@@ -1138,8 +1294,15 @@ function ShowStep() {
         parentNumList.splice(0)
         piNumList.splice(0)
         stack.splice(0)
-        arrStepShow.splice(0)
-        arrStepShow2.splice(0)
+        if (arrStepShow !== undefined) {
+            arrStepShow.splice(0)
+        }
+        if (arrStepShow2 !== undefined) {
+            arrStepShow2.splice(0)
+        }
+        if (arrStepShow3 !== undefined) {
+            arrStepShow3.splice(0)
+        }
         markedShow.splice(0)
         minNumTarjanShow.splice(0)
         piNumShow.splice(0)
@@ -1147,39 +1310,55 @@ function ShowStep() {
         connectedComponentList.splice(0)
         arrEdgeList.splice(0)
         minEdgeList.splice(0)
-        timeoutList.forEach((timeoutId) => {
-            clearTimeout(timeoutId)
-        })
-        timeoutList.splice(0)
-
     }
     const resetAllData = () => {
         resetAll()
-        setPoints(points.map((item) => {
-            return {
-                ...item,
-                state: state.idle,
-                secondText: undefined
-            }
-        }))
-        setEdges(edges.map((item) => {
-            return {
-                ...item,
-                state: state.idle
-            }
-        }))
+        if (algorithm === "ChuLiu") {
+            const d = dimensionsGraphContainer
+            const size = 200
+            setPoints(dataGraph.points.map((i) => {
+                return {
+                    value: i,
+                    position: {
+                        x: d.width / 2 + Math.cos((Math.PI * 2 / dataGraph.points.length) * i) * size, y: d.height / 2 + Math.sin((Math.PI * 2 / dataGraph.points.length) * i) * size
+                    },
+                    secondText: undefined,
+                    state: state.idle
+                }
+            }))
+            setEdges(dataGraph.edges.map((item) => {
+                return {
+                    ...item,
+                    state: state.idle
+                }
+            }))
+            console.log("A")
+        }
+        else {
+            setPoints(points.map((item) => {
+                return {
+                    ...item,
+                    state: state.idle,
+                    secondText: undefined
+                }
+            }))
+            setEdges(edges.map((item) => {
+                return {
+                    ...item,
+                    state: state.idle
+                }
+            }))
+        }
+
     }
     useEffect(() => {
         resetAll()
         setStart(1)
         setEnd(0)
     }, [dataGraph])
-
     useEffect(() => {
         resetAllData()
-    }, [algorithm, time, modePath, modeDirected])
-
-
+    }, [time])
     return (
         <Container fuild className="overflow-auto" style={{ height: "400px" }}>
             {algorithm === "DFS" ? <Row>
@@ -1314,7 +1493,7 @@ function ShowStep() {
                 <Col xs={6}>
                     <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >VALUE</div>
                     <Stack>
-                        {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={item} />) : ""}
+                        {arrStepShow2 !== undefined ? arrStepShow2.map((item) => <ShowStepItemStack value={item} />) : ""}
                     </Stack>
                 </Col>
             </Row> : ""}
@@ -1359,7 +1538,7 @@ function ShowStep() {
                 <Col xs={6}>
                     <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >EDGES</div>
                     <Stack>
-                        {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={"(" + item[0].u + ", " + item[0].v + ")"} state={item[1]} />) : ""}
+                        {arrStepShow3 !== undefined ? arrStepShow3.map((item) => <ShowStepItemStack value={"(" + item[0].u + ", " + item[0].v + ")"} state={item[1]} />) : ""}
                     </Stack>
                 </Col>
             </Row> : ""}
@@ -1383,7 +1562,7 @@ function ShowStep() {
                 <Col xs={4}>
                     <div className="text-white d-flex justify-content-around fw-bold" style={{ fontSize: "0.7rem" }} >EDGES</div>
                     <Stack>
-                        {arrStepShow !== undefined ? arrStepShow.map((item) => <ShowStepItemStack value={"(" + item.u + ", " + item.v + ")"} />) : ""}
+                        {arrStepShow3 !== undefined ? arrStepShow3.map((item) => <ShowStepItemStack value={"(" + item.u + ", " + item.v + ")"} />) : ""}
                     </Stack>
                 </Col>
                 <Col xs={4}>

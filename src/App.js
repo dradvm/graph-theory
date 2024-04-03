@@ -46,9 +46,6 @@ function App() {
     }))
   }
 
-  const findItem = (value) => {
-    return points.filter((item) => item.value === value)[0]
-  }
 
 
   useEffect(() => {
@@ -79,7 +76,6 @@ function App() {
       points, setPoints,
       edges, setEdges,
       handlePointsSetPosition,
-      findItem,
       modeDirected, setModeDirected,
       modePath, setModePath,
       algorithm, setAlgorithm,
