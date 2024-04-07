@@ -6,7 +6,7 @@ import { GraphContext } from "@/App";
 
 function NavTop() {
     const { algorithm, setAlgorithm, time, setTime, stateTime } = useContext(GraphContext)
-    const listAlgorithm = ["None", "DFS", "BFS", "Tarjan", "Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "Topo", "QLDA", "Kruskal", "Prim", "ChuLiu"]
+    const listAlgorithm = ["None", "DFS", "BFS", "Tarjan", "Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "Topo", "QLDA", "Kruskal", "Prim", "ChuLiu", "Edmonds - Karp"]
 
     const handleSetAlgorithm = (item) => {
         if (item === "None") {

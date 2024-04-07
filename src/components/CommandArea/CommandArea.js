@@ -43,7 +43,7 @@ function CommandArea() {
             d = Array.from(data.pop().split(" ").map((item) => Number(item)))
         }
         const matrix = ["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall"].indexOf(algorithm) > -1 ? Array.from({ length: 100 }).map((item) => Array(100).fill(-1000)) : Array.from({ length: 100 }).map((item) => Array(100).fill(0))
-        const dataEdge = data.map((item) => item.split(" ")).map((edge) => {
+        var dataEdge = data.map((item) => item.split(" ")).map((edge) => {
             {
                 const u = Number(edge[0])
                 const v = Number(edge[1])
@@ -120,6 +120,13 @@ function CommandArea() {
             })
         }
         if (!error) {
+            dataEdge = dataEdge.map((item) => {
+                return {
+                    ...item,
+                    secondText: undefined
+                }
+            })
+            console.log(dataEdge)
             setDataGraph({
                 n: n,
                 points: [...Array(n).keys()].map((i) => i + 1),
@@ -141,7 +148,7 @@ function CommandArea() {
     }
     const changeModeDirected = () => {
         resetInput()
-        if (["DFS", "BFS"].indexOf(algorithm) === -1) {
+        if (["DFS", "BFS", "Moore - Dijkstra"].indexOf(algorithm) === -1) {
 
         }
         else {
@@ -161,7 +168,7 @@ function CommandArea() {
             setModeDirected(true)
             setModePath(false)
         }
-        else if (["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "QLDA", "ChuLiu"].indexOf(algorithm) > -1) {
+        else if (["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall", "QLDA", "ChuLiu", "Edmonds - Karp"].indexOf(algorithm) > -1) {
             setModeDirected(true)
             setModePath(true)
         }

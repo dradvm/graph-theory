@@ -9,7 +9,7 @@ function GraphContainer({ dimensions }) {
     const { dataGraph, points, setPoints, edges, setEdges, handlePointsSetPosition, algorithm, state } = useContext(GraphContext)
 
     const size = 200
-    const radius = 32
+    const radius = 36
     const border = 4
     useEffect(() => {
         if (dataGraph.n > 0) {

@@ -6,7 +6,7 @@ import MyButton from "../MyButton/MyButton";
 import clsx from "clsx";
 import styles from "./ShowStep.module.scss"
 function ShowStep() {
-    const { dataGraph, setDataGraph, points, setPoints, state, algorithm, time, edges, setEdges, dimensionsGraphContainer } = useContext(GraphContext)
+    const { dataGraph, setDataGraph, points, setPoints, state, algorithm, time, edges, setEdges, dimensionsGraphContainer, modeDirected } = useContext(GraphContext)
     const [arrStepList] = useState([])
     const [arrStepList2] = useState([])
     const [arrStepList3] = useState([])
@@ -505,12 +505,24 @@ function ShowStep() {
                     for (let j = 1; j < i; j++) {
                         arrTemp.push([arrNum[j - 1], arrNum[j]])
                     }
+                    console.log(arrTemp)
                     setEdges(edges.map((edge) => {
                         var newState = state.idle
                         arrTemp.forEach((temp) => {
-                            if (edge.u === temp[0] && edge.v === temp[1]) {
-                                newState = state.pending
+                            if (modeDirected) {
+                                if (edge.u === temp[0] && edge.v === temp[1]) {
+                                    newState = state.pending
+                                }
                             }
+                            else {
+                                if (edge.u === temp[0] && edge.v === temp[1]) {
+                                    newState = state.pending
+                                }
+                                if (edge.u === temp[1] && edge.v === temp[0]) {
+                                    newState = state.pending
+                                }
+                            }
+
                         })
                         return {
                             ...edge,
@@ -769,18 +781,46 @@ function ShowStep() {
             }
         }
         var path = []
-        arrEdgeList.push(Array.from(path))
-        for (let i = dataGraph.n; i >= 1; i--) {
-            if (t[i - 1] === T[i - 1]) {
-                path.push(i)
-                arrEdgeList.push(Array.from(path))
 
+        var arrEd = []
+        arrEdgeList.push(Array.from(arrEd))
+        for (let i = 1; i < rank; i++) {
+            var arrP = []
+            marked.forEach((item, index) => {
+                if (item === i) {
+                    if (item === 1 || item === rank - 1) {
+                        arrP.push(index + 1)
+                        if (index + 1 === dataGraph.n) {
+                            path[path.length - 1].forEach((item2) => {
+                                if (dataGraph.matrix[item2][index + 1]) {
+                                    arrEd.push(edges.find((ed) => ed.u === item2 && ed.v === (index + 1)))
+                                    arrEdgeList.push(Array.from(arrEd))
+                                }
+                            })
+                        }
+
+                    }
+                    else if (T[index] === t[index]) {
+                        var check = false
+                        console.log(index + 1)
+                        path[path.length - 1].forEach((item2) => {
+                            if (dataGraph.matrix[item2][index + 1]) {
+                                check = true
+                                arrEd.push(edges.find((ed) => ed.u === item2 && ed.v === (index + 1)))
+                                arrEdgeList.push(Array.from(arrEd))
+                            }
+                        })
+                        if (check) {
+                            arrP.push(index + 1)
+                        }
+                    }
+                }
+            })
+            if (arrP.length > 0) {
+                path.push(arrP)
             }
         }
-        if (path.indexOf(dataGraph.n - 1) === -1) {
-            path.push(dataGraph.n - 1)
-            arrEdgeList.push(Array.from(path))
-        }
+
     }
     const runQLDA = () => {
         resetAllData()
@@ -793,7 +833,7 @@ function ShowStep() {
         for (let i = 0; i < arrStepList3.length; i++) {
             timeoutId = setTimeout(() => {
                 var maxRank = arrStepList3[i].reduce((max, item) => item > max ? item : max, arrStepList3[i][0])
-                setPoints(points.map((item) => {
+                newPointPosition = points.map((item) => {
                     var indexHeight = 0
                     var newState = state.idle
                     var sameRank = arrStepList3[i].reduce((c, rank, index) => {
@@ -816,43 +856,22 @@ function ShowStep() {
                             y: y
                         }
                     }
-                }))
+                })
+                setPoints(newPointPosition)
             }, time * i)
             timeoutList.push(timeoutId)
         }
-        if (true) {
-            let i = arrStepList3.length - 1
-            var maxRank = arrStepList3[i].reduce((max, item) => item > max ? item : max, arrStepList3[i][0])
-            newPointPosition = points.map((item) => {
-                var indexHeight = 0
 
-                var sameRank = arrStepList3[i].reduce((c, rank, index) => {
-                    let x = 0
-                    if (rank === arrStepList3[i][item.value - 1]) {
-                        x = 1
-                        if ((index + 1) <= item.value) {
-                            indexHeight++
-                        }
-                    }
-                    return c + x
-                }, 0)
-                var x = (dimensionsGraphContainer.width / (maxRank + 1)) * arrStepList3[i][item.value - 1]
-                var y = (dimensionsGraphContainer.height / (sameRank + 1) * indexHeight)
-                return {
-                    ...item,
-                    position: {
-                        x: x === 0 ? dimensionsGraphContainer.width : x,
-                        y: y
-                    },
-                }
-            })
-        }
         for (let i = 0; i < arrEdgeList.length; i++) {
             timeoutId = setTimeout(() => {
+                var newPointEdge = Array.from(new Set(arrEdgeList[i].reduce((arr, item) => arr.concat(item.u, item.v), [])))
+                console.log(newPointEdge)
                 setPoints(Array.from(newPointPosition).map((item) => {
                     var newState = state.idle
-                    if (arrEdgeList[i].indexOf(item.value) > -1) {
-                        newState = state.marked
+                    if (newPointEdge !== undefined) {
+                        if (newPointEdge.indexOf(item.value) > -1) {
+                            newState = state.marked
+                        }
                     }
                     return {
                         ...item,
@@ -861,10 +880,9 @@ function ShowStep() {
                 }))
                 setEdges(edges.map((item) => {
                     var newState = state.idle;
-                    if (arrEdgeList[i].indexOf(item.u) > -1 && arrEdgeList[i].indexOf(item.v) > -1) {
-                        if (arrEdgeList[i].indexOf(item.v) + 1 === arrEdgeList[i].indexOf(item.u)) {
-                            newState = state.marked
-                        }
+                    if (arrEdgeList[i].indexOf(item) > -1) {
+                        newState = state.marked
+                        console.log("A")
                     }
                     return {
                         ...item,
@@ -1270,6 +1288,160 @@ function ShowStep() {
             timeoutList.push(timeoutId)
         }
     }
+    const edmondsKarp = () => {
+
+        var F = []
+        for (let i = 0; i <= dataGraph.n; i++) {
+            F.push(Array(dataGraph.n + 1).fill(0))
+        }
+        do {
+            var label = []
+            for (let i = 0; i <= dataGraph.n; i++) {
+                label.push({
+                    direction: 0,
+                    parent: -1,
+                    sigma: undefined
+                })
+            }
+            label[1].direction = 1;
+            label[1].parent = 1;
+            label[1].sigma = infinity
+            var queue = []
+            var found = false
+            var sigma = 0
+            queue.push(1)
+            var arrStep = []
+            var arrStep2 = []
+            arrStepList.push(Array.from(arrStep))
+            arrStepList2.push(Array.from(arrStep2))
+            arrStepList3.push(Array.from(label.map((item) => Object.assign({}, item))))
+            arrEdgeList.push(Array.from(F.map((item) => Array.from(item))))
+            while (queue.length > 0) {
+                var u = queue.shift()
+                for (let i = 1; i <= dataGraph.n; i++) {
+                    if (dataGraph.matrix[u][i] && label[i].direction === 0) {
+                        if (F[u][i] < dataGraph.matrix[u][i]) {
+                            label[i].direction = 1
+                            label[i].parent = u
+                            label[i].sigma = Math.min(label[u].sigma, dataGraph.matrix[u][i] - F[u][i]);
+                            queue.push(i)
+                            arrStep.push(edges.find((ed) => ed.u === u && ed.v === i))
+                            arrStepList.push(Array.from(arrStep))
+                            arrStepList2.push(Array.from(arrStep2))
+                            arrStepList3.push(Array.from(label.map((item) => Object.assign({}, item))))
+                            arrEdgeList.push(Array.from(F.map((item) => Array.from(item))))
+                        }
+                    }
+                }
+                for (let i = 1; i <= dataGraph.n; i++) {
+                    if (dataGraph.matrix[i][u] && label[i].direction === 0) {
+                        if (F[i][u] > 0) {
+                            label[i].direction = -1
+                            label[i].parent = u
+                            label[i].sigma = Math.min(label[u].sigma, F[i][u])
+                            queue.push(i)
+                            arrStep.push(edges.find((ed) => ed.u === i && ed.v === u))
+                            arrStepList.push(Array.from(arrStep))
+                            arrStepList2.push(Array.from(arrStep2))
+                            arrStepList3.push(Array.from(label.map((item) => Object.assign({}, item))))
+                            arrEdgeList.push(Array.from(F.map((item) => Array.from(item))))
+                        }
+                    }
+                }
+                if (label[dataGraph.n].direction !== 0) {
+                    found = true
+                    break
+                }
+            }
+            if (found) {
+                sigma = label[dataGraph.n].sigma
+                var u = dataGraph.n
+                arrStepList.push(arrStep)
+                arrStepList2.push(Array.from(arrStep2))
+                arrStepList3.push(Array.from(label.map((item) => Object.assign({}, item))))
+                arrEdgeList.push(Array.from(F.map((item) => Array.from(item))))
+                while (u !== 1) {
+                    var p = label[u].parent
+                    if (label[u].direction > 0) {
+                        F[p][u] += sigma
+                        arrStep2.push(edges.find((item) => item.u === p && item.v === u))
+                    }
+                    else {
+                        F[u][p] -= sigma
+                        arrStep2.push(edges.find((item) => item.u === u && item.v === p))
+                    }
+                    u = p
+                    arrStepList.push(arrStep)
+                    arrStepList2.push(Array.from(arrStep2))
+                    arrStepList3.push(Array.from(label.map((item) => Object.assign({}, item))))
+                    arrEdgeList.push(Array.from(F.map((item) => Array.from(item))))
+                }
+            }
+            else {
+                arrStepList.push(arrStep)
+                arrStepList2.push(Array.from(arrStep2))
+                arrStepList3.push(Array.from(label.map((item) => Object.assign({}, item))))
+                arrEdgeList.push(Array.from(F.map((item) => Array.from(item))))
+                break
+            }
+        } while (true)
+    }
+    const runEdmondsKarp = () => {
+        resetAll()
+        edmondsKarp()
+        showEdmondsKarp()
+    }
+    const showEdmondsKarp = () => {
+        var timeoutId
+        for (let i = 0; i < arrStepList.length; i++) {
+            timeoutId = setTimeout(() => {
+                var newPoint = Array.from(new Set((arrStepList[i].reduce((arr, ed) => arr.concat(ed.u, ed.v), []))))
+                var newPoint2 = Array.from(new Set((arrStepList2[i].reduce((arr, ed) => arr.concat(ed.u, ed.v), []))))
+                setPoints(points.map((item) => {
+                    var newState = state.idle
+                    if (newPoint !== undefined) {
+                        if (newPoint.indexOf(item.value) > -1) {
+                            newState = state.pending
+                        }
+                        if (newPoint2.indexOf(item.value) > -1) {
+                            newState = state.marked
+                        }
+                        if (i === arrStepList.length - 1) {
+                            if (newPoint.indexOf(item.value) > -1) {
+                                newState = state.pending
+                            }
+                            else {
+                                newState = state.marked
+                            }
+                        }
+                    }
+                    return {
+                        ...item,
+                        secondText: arrStepList3[i][item.value].direction + " " + arrStepList3[i][item.value].parent + " " + arrStepList3[i][item.value].sigma,
+                        state: newState
+                    }
+                }))
+                setEdges(edges.map((item) => {
+                    var newState = state.idle
+                    if (arrStepList[i].indexOf(item) > -1) {
+                        newState = state.pending
+                    }
+                    if (arrStepList2[i].indexOf(item) > -1) {
+                        newState = state.marked
+                    }
+                    if (i === arrStepList.length - 1) {
+                        newState = state.idle
+                    }
+                    return {
+                        ...item,
+                        secondText: arrEdgeList[i][item.u][item.v],
+                        state: newState
+                    }
+                }))
+            }, i * time)
+            timeoutList.push(timeoutId)
+        }
+    }
 
     const resetAll = () => {
 
@@ -1332,7 +1504,6 @@ function ShowStep() {
                     state: state.idle
                 }
             }))
-            console.log("A")
         }
         else {
             setPoints(points.map((item) => {
@@ -1580,7 +1751,11 @@ function ShowStep() {
                     <MyButton value="Run" handleFunction={runChuLiu} />
                 </div>
             </Row> : ""}
-
+            {algorithm === "Edmonds - Karp" ? <Row>
+                <div className="w-100 mb-2">
+                    <MyButton value="Run" handleFunction={runEdmondsKarp} />
+                </div>
+            </Row> : ""}
 
         </Container>
     );

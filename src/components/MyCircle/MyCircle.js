@@ -51,6 +51,25 @@ function MyCircle({ point, handleRender, radius, size, border, color, area, stat
                 text = "\u03b2"
             }
         }
+        if (algorithm === "Edmonds - Karp") {
+            if (point.secondText !== undefined) {
+                var [direction, parent, sigma] = point.secondText.split(" ")
+                direction = Number(direction)
+                parent = Number(parent)
+                sigma = Number(sigma)
+                if (direction !== 0) {
+                    var dir = ""
+                    if (direction === 1) {
+                        dir = "+"
+                    }
+                    else if (direction === -1) {
+                        dir = "-"
+                    }
+                    //text = point.value + "/" + (sigma === 99999 ? "\u221E" : sigma)
+                }
+            }
+
+        }
         setCurrent({
             ...point,
             text: text

@@ -12,11 +12,14 @@ function MyEdge({ edge, radius, border }) {
         pvy: null,
         pos1: {},
         pos2: {},
-        pos3: {}
+        pos3: {},
+        text: undefined
     })
-    const radiusEdge = 16
+    var radiusEdge = 16
     const borderEdge = 2
-
+    if (algorithm === "Edmonds - Karp") {
+        radiusEdge = 26
+    }
     const isReverseEdge = (edge) => {
         return edges.find((item) => item.u === edge.v && item.v === edge.u) !== undefined;
     }
@@ -70,13 +73,19 @@ function MyEdge({ edge, radius, border }) {
             x: pvx + dicX * Math.cos(degCos) * (border + radius),
             y: pvy + dicY * Math.sin(degCos) * (border + radius)
         }
+        var text = isNaN(edge.w) ? "" : edge.w
+        if (algorithm === "Edmonds - Karp" && edge.secondText !== undefined) {
+            text = edge.secondText + "/" + edge.w
+            radiusEdge = 20
+        }
         setCurrent({
             dicX, dicY,
             pux, puy,
             pvx, pvy,
             pos1,
             pos2,
-            pos3
+            pos3,
+            text
         })
     }, [edge, points])
     return (
@@ -139,7 +148,7 @@ function MyEdge({ edge, radius, border }) {
                             strokeWidth={borderEdge}
                         />
                         <Text
-                            text={isNaN(edge.w) ? "" : edge.w}
+                            text={current.text}
                             fontSize={11}
                             fill="black"
                             align="center"
@@ -164,7 +173,7 @@ function MyEdge({ edge, radius, border }) {
                     strokeWidth={borderEdge}
                 />
                 <Text
-                    text={isNaN(edge.w) ? "" : edge.w}
+                    text={current.text}
                     fontSize={11}
                     fill="black"
                     align="center"
