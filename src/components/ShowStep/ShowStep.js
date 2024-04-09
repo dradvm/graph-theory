@@ -505,7 +505,6 @@ function ShowStep() {
                     for (let j = 1; j < i; j++) {
                         arrTemp.push([arrNum[j - 1], arrNum[j]])
                     }
-                    console.log(arrTemp)
                     setEdges(edges.map((edge) => {
                         var newState = state.idle
                         arrTemp.forEach((temp) => {
@@ -802,7 +801,6 @@ function ShowStep() {
                     }
                     else if (T[index] === t[index]) {
                         var check = false
-                        console.log(index + 1)
                         path[path.length - 1].forEach((item2) => {
                             if (dataGraph.matrix[item2][index + 1]) {
                                 check = true
@@ -865,7 +863,7 @@ function ShowStep() {
         for (let i = 0; i < arrEdgeList.length; i++) {
             timeoutId = setTimeout(() => {
                 var newPointEdge = Array.from(new Set(arrEdgeList[i].reduce((arr, item) => arr.concat(item.u, item.v), [])))
-                console.log(newPointEdge)
+
                 setPoints(Array.from(newPointPosition).map((item) => {
                     var newState = state.idle
                     if (newPointEdge !== undefined) {
@@ -882,7 +880,6 @@ function ShowStep() {
                     var newState = state.idle;
                     if (arrEdgeList[i].indexOf(item) > -1) {
                         newState = state.marked
-                        console.log("A")
                     }
                     return {
                         ...item,
@@ -1153,7 +1150,6 @@ function ShowStep() {
             }
         }
         bplt.sort()
-        console.log(bplt)
         var edgeG1 = []
         G.edges.forEach((item) => {
             var u = bplt.find((bp) => bp.indexOf(item.u) > -1)
@@ -1187,7 +1183,6 @@ function ShowStep() {
                 }
             }
         })        
-        console.log("--")
 
     }
     const chuLiu = () => {
@@ -1213,11 +1208,9 @@ function ShowStep() {
         }
         while (t > 0) {
             expand(H[t], H[t - 1], G[t - 1])
-            console.log(H[t])
             arrStepList2.push(H[t])
             t--
         }
-        console.log(H[0])
         arrStepList2.push(H[0])
     }
     const runChuLiu = () => {
@@ -1231,8 +1224,6 @@ function ShowStep() {
         const d = dimensionsGraphContainer
         const size = 200
         var pointsNew = points
-        console.log(arrStepList)
-        console.log(arrStepList2)
         if (points.length !== dataGraph.n || edges.length !== dataGraph.edges.length) {
             return
         }

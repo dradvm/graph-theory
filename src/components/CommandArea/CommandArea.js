@@ -57,10 +57,6 @@ function CommandArea() {
                     else {
                         matrix[u][v] = 1
                         if (!modeDirected) {
-                            console.log(matrix)
-                            console.log(v)
-                            console.log(matrix[v])
-                            console.log(matrix[v][u])
                             matrix[v][u] = 1
                         }
                     }
@@ -132,7 +128,6 @@ function CommandArea() {
                     secondText: undefined
                 }
             })
-            console.log(dataEdge)
             setDataGraph({
                 n: n,
                 points: [...Array(n).keys()].map((i) => i + 1),
