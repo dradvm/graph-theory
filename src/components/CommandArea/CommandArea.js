@@ -128,6 +128,7 @@ function CommandArea() {
                     secondText: undefined
                 }
             })
+
             setDataGraph({
                 n: n,
                 points: [...Array(n).keys()].map((i) => i + 1),
