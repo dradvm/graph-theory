@@ -47,20 +47,26 @@ function CommandArea() {
             {
                 const u = Number(edge[0])
                 const v = Number(edge[1])
-                if (modePath) {
-                    matrix[u][v] = Number(edge[2])
-                    if (!modeDirected) {
-                        matrix[v][u] = Number(edge[2])
+                if (!Number.isNaN(u) && !Number.isNaN(v)) {
+                    if (modePath) {
+                        matrix[u][v] = Number(edge[2])
+                        if (!modeDirected) {
+                            matrix[v][u] = Number(edge[2])
+                        }
                     }
-                }
-                else {
-                    matrix[u][v] = 1
-                    if (!modeDirected) {
-                        matrix[v][u] = 1
+                    else {
+                        matrix[u][v] = 1
+                        if (!modeDirected) {
+                            console.log(matrix)
+                            console.log(v)
+                            console.log(matrix[v])
+                            console.log(matrix[v][u])
+                            matrix[v][u] = 1
+                        }
                     }
-                }
-                if (algorithm === "QLDA") {
-                    matrix[u][v] = d[u - 1]
+                    if (algorithm === "QLDA") {
+                        matrix[u][v] = d[u - 1]
+                    }
                 }
                 var w = modePath ? Number(edge[2]) : NaN
                 w = algorithm === "QLDA" ? d[u - 1] : w
