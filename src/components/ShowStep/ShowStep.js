@@ -1182,7 +1182,7 @@ function ShowStep() {
                     H.edges = H.edges.filter((item) => item !== edgeH)
                 }
             }
-        })        
+        })
 
     }
     const chuLiu = () => {

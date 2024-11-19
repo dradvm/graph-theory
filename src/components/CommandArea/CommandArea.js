@@ -17,7 +17,7 @@ function CommandArea() {
             n: 0,
             matrix: [],
             points: [],
-            edge: []
+            edges: []
         })
         setPoints([])
     }
@@ -42,38 +42,38 @@ function CommandArea() {
         if (algorithm === "QLDA") {
             d = Array.from(data.pop().split(" ").map((item) => Number(item)))
         }
-        const matrix = ["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall"].indexOf(algorithm) > -1 ? Array.from({ length: 100 }).map((item) => Array(100).fill(-1000)) : Array.from({ length: 100 }).map((item) => Array(100).fill(0))
+        const matrix = ["Moore - Dijkstra", "Bellman - Ford", "Floyd - Warshall"].indexOf(algorithm) > -1 ?
+            Array.from({ length: 100 }).map((item) => Array(100).fill(-1000)) :
+            Array.from({ length: 100 }).map((item) => Array(100).fill(0))
         var dataEdge = data.map((item) => item.split(" ")).map((edge) => {
-            {
-                const u = Number(edge[0])
-                const v = Number(edge[1])
-                if (!Number.isNaN(u) && !Number.isNaN(v)) {
-                    if (modePath) {
-                        matrix[u][v] = Number(edge[2])
-                        if (!modeDirected) {
-                            matrix[v][u] = Number(edge[2])
-                        }
-                    }
-                    else {
-                        matrix[u][v] = 1
-                        if (!modeDirected) {
-                            matrix[v][u] = 1
-                        }
-                    }
-                    if (algorithm === "QLDA") {
-                        matrix[u][v] = d[u - 1]
+            const u = Number(edge[0])
+            const v = Number(edge[1])
+            if (!Number.isNaN(u) && !Number.isNaN(v)) {
+                if (modePath) {
+                    matrix[u][v] = Number(edge[2])
+                    if (!modeDirected) {
+                        matrix[v][u] = Number(edge[2])
                     }
                 }
-                var w = modePath ? Number(edge[2]) : NaN
-                w = algorithm === "QLDA" ? d[u - 1] : w
-                return { u: u, v: v, w: w, state: state.idle }
-
+                else {
+                    matrix[u][v] = 1
+                    if (!modeDirected) {
+                        matrix[v][u] = 1
+                    }
+                }
+                if (algorithm === "QLDA") {
+                    matrix[u][v] = d[u - 1]
+                }
             }
+            var w = modePath ? Number(edge[2]) : NaN
+            w = algorithm === "QLDA" ? d[u - 1] : w
+            return { u: u, v: v, w: w, state: state.idle }
+
         })
         if (dataEdge.length !== m && !error) {
             error = true
             runError("Your edges does not enough!!")
-        }   
+        }
         if (d.length != n && d.length > 0) {
             error = true
             runError("Your values does not match number of point")
@@ -150,7 +150,7 @@ function CommandArea() {
     }
     const changeModeDirected = () => {
         resetInput()
-        if (["DFS", "BFS", "Moore - Dijkstra"].indexOf(algorithm) === -1) {
+        if (algorithm != null && ["DFS", "BFS", "Moore - Dijkstra"].indexOf(algorithm) === -1) {
 
         }
         else {
